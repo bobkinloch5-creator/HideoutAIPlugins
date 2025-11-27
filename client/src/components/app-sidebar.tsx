@@ -111,7 +111,7 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="p-4 space-y-3">
-        <Link href="/landing">
+        <Link href="/">
           <Button 
             variant="outline" 
             size="sm" 
