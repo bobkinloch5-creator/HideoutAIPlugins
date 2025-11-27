@@ -110,7 +110,17 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="p-4">
+      <SidebarHeader className="p-4 space-y-3">
+        <Link href="/landing">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full gap-2 justify-start" 
+            data-testid="button-home"
+          >
+            <span>← Back to Home</span>
+          </Button>
+        </Link>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0">
             <Bot className="w-6 h-6 text-white" />

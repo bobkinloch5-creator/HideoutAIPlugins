@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { usePluginConnection } from "@/hooks/usePluginConnection";
@@ -18,7 +19,9 @@ import {
   Code2,
   Zap,
   Wifi,
-  WifiOff
+  WifiOff,
+  HelpCircle,
+  Lightbulb
 } from "lucide-react";
 
 interface AIChatProps {
@@ -47,6 +50,30 @@ export function AIChat({ projectId, projectType, onCommandGenerated }: AIChatPro
     [{ id: "1", role: "assistant", content: "Hi! I'm your AI code generator. Describe what you want to build, and I'll generate production-ready Roblox Lua code with detailed explanations of every feature. The plugin is " + (isConnected ? "connected!" : "connecting...") }]
   );
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [showGuide, setShowGuide] = useState(false);
+
+  const promptGuide = [
+    {
+      title: "Be Specific",
+      examples: ["Add checkpoints every 50 studs", "Create a lap timer for racing tracks"],
+      tips: "Describe exactly what feature you want with details"
+    },
+    {
+      title: "Use Game Terminology",
+      examples: ["Add spawn locations for 4 players", "Create lava damage zones"],
+      tips: "Use Roblox/game dev terms for better code generation"
+    },
+    {
+      title: "Mention Scale & Numbers",
+      examples: ["10 stage obby with increasing difficulty", "50 stud high tower"],
+      tips: "Include quantities and measurements for precise code"
+    },
+    {
+      title: "Request Features Incrementally",
+      examples: ["First: basic obby, Then: add checkpoints, Finally: add leaderboard"],
+      tips: "Build complex games step-by-step for best results"
+    }
+  ];
   
   // Parse AI response to extract explanation and code
   const parseAIResponse = (fullResponse: string): { explanation: string; code: string } => {
