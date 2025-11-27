@@ -321,7 +321,7 @@ export default function PluginSettings() {
                   <div data-testid="section-feature-usage">
                     <h3 className="font-medium mb-3" data-testid="text-feature-usage-title">Feature Usage</h3>
                     <div className="space-y-2">
-                      {Object.entries(analytics.featureUsage).map(([feature, count]) => (
+                      {Object.entries(analytics.featureUsage).map(([feature, count]: [string, any]) => (
                         <div key={feature} className="flex justify-between items-center p-2 bg-muted rounded" data-testid={`row-feature-${feature}`}>
                           <span className="text-sm" data-testid={`text-feature-name-${feature}`}>{feature}</span>
                           <span className="text-sm font-medium" data-testid={`text-feature-count-${feature}`}>{count} uses</span>
@@ -335,7 +335,7 @@ export default function PluginSettings() {
                   <div data-testid="section-game-types">
                     <h3 className="font-medium mb-3" data-testid="text-game-types-title">Game Types</h3>
                     <div className="space-y-2">
-                      {Object.entries(analytics.gameTypeBreakdown).map(([gameType, count]) => (
+                      {Object.entries(analytics.gameTypeBreakdown).map(([gameType, count]: [string, any]) => (
                         <div key={gameType} className="flex justify-between items-center p-2 bg-muted rounded" data-testid={`row-gametype-${gameType}`}>
                           <span className="text-sm capitalize" data-testid={`text-gametype-name-${gameType}`}>{gameType}</span>
                           <span className="text-sm font-medium" data-testid={`text-gametype-count-${gameType}`}>{count} projects</span>

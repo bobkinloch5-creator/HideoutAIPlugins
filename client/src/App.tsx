@@ -18,6 +18,7 @@ import ProjectDetail from "@/pages/project-detail";
 import Assets from "@/pages/assets";
 import Docs from "@/pages/docs";
 import Settings from "@/pages/settings";
+import PluginSettings from "@/pages/plugin-settings";
 import Downloads from "@/pages/downloads";
 import Onboarding from "@/pages/onboarding";
 import NotFound from "@/pages/not-found";
@@ -90,6 +91,7 @@ function Router() {
         <Route path="/docs" component={Docs} />
         <Route path="/downloads" component={Downloads} />
         <Route path="/settings" component={Settings} />
+        <Route path="/plugin-settings" component={PluginSettings} />
         <Route component={NotFound} />
       </Switch>
     </AuthenticatedLayout>
