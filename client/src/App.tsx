@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation, Link } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -26,6 +26,7 @@ import Onboarding from "@/pages/onboarding";
 import NotFound from "@/pages/not-found";
 import TermsOfService from "@/pages/terms";
 import PrivacyPolicy from "@/pages/privacy";
+import ProfilePage from "@/pages/profile";
 
 
 function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
@@ -44,14 +45,16 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
             <SidebarTrigger data-testid="button-sidebar-toggle" />
             <div className="flex items-center gap-3">
               {user && (
-                <div className="flex items-center gap-2">
-                  <img
-                    src={user.avatarUrl || user.profileImageUrl || `https://ui-avatars.com/api/?name=${user.username || 'User'}&background=random`}
-                    alt={user.username || 'User'}
-                    className="w-8 h-8 rounded-full ring-2 ring-primary/20"
-                  />
-                  <span className="text-sm font-medium hidden sm:inline">{user.username || user.email}</span>
-                </div>
+                <Link href="/profile">
+                  <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+                    <img
+                      src={user.avatarUrl || user.profileImageUrl || `https://ui-avatars.com/api/?name=${user.username || 'User'}&background=random`}
+                      alt={user.username || 'User'}
+                      className="w-8 h-8 rounded-full ring-2 ring-primary/20"
+                    />
+                    <span className="text-sm font-medium hidden sm:inline">{user.username || user.email}</span>
+                  </div>
+                </Link>
               )}
               <ThemeToggle />
             </div>
@@ -94,6 +97,7 @@ function Router() {
         <Route path="/downloads" component={Downloads} />
         <Route path="/settings" component={Settings} />
         <Route path="/plugin-settings" component={PluginSettings} />
+        <Route path="/profile" component={ProfilePage} />
         <Route path="/terms" component={TermsOfService} />
         <Route path="/privacy" component={PrivacyPolicy} />
         <Route component={NotFound} />
