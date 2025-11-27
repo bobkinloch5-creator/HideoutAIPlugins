@@ -41,16 +41,13 @@ export default function Downloads() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-b from-primary/10 via-transparent to-transparent pt-12 pb-12">
-        <div className="max-w-4xl mx-auto px-6">
-          <h1 className="text-4xl font-bold mb-4" data-testid="text-downloads-title">
-            Plugin Downloads
-          </h1>
-          <p className="text-xl text-muted-foreground mb-2" data-testid="text-downloads-subtitle">
-            Download the Hideout Bot Roblox Studio plugin to start building games with AI.
-          </p>
+    <div className="space-y-8">
+      {/* Hero Section - Fancy */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-green-500/20 via-primary/10 to-cyan-500/10 p-8 border border-green-500/20">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-green-500/15 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        <div className="relative z-10">
+          <h1 className="text-4xl font-black mb-2" data-testid="text-downloads-title">Plugin Downloads</h1>
+          <p className="text-lg text-muted-foreground" data-testid="text-downloads-subtitle">Download the Hideout Bot Roblox Studio plugin to start building games with AI.</p>
           <p className="text-sm text-muted-foreground" data-testid="text-latest-version">
             Latest version: <span className="font-semibold">{currentVersion}</span>
           </p>
@@ -58,7 +55,7 @@ export default function Downloads() {
       </div>
 
       {/* Download Section */}
-      <div className="max-w-4xl mx-auto px-6 py-12">
+      <div>
         {/* Latest Version */}
         <Card className="mb-8 overflow-hidden border-primary/50 bg-primary/5" data-testid="card-latest-version">
           <div className="p-8">

@@ -123,11 +123,26 @@ export default function Projects() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Fancy Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 via-accent/10 to-purple-500/10 p-8 border border-primary/20">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-accent/15 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        <div className="relative z-10">
+          <h1 className="text-4xl font-black mb-2" data-testid="text-projects-title">Projects</h1>
+          <p className="text-lg text-muted-foreground">Manage all your Roblox game projects</p>
+        </div>
+      </div>
+
+      {/* Search & Filter */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold" data-testid="text-projects-title">Projects</h1>
-          <p className="text-muted-foreground">Manage all your Roblox game projects</p>
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search projects..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+            data-testid="input-search-projects"
+          />
         </div>
         <Link href="/new-project">
           <Button className="gap-2" data-testid="button-new-project">

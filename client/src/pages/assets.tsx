@@ -103,12 +103,13 @@ export default function Assets() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold" data-testid="text-assets-title">Asset Library</h1>
-        <p className="text-muted-foreground">
-          Browse and use 200+ keywords to insert assets in your game
-        </p>
+      {/* Fancy Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-accent/20 via-primary/10 to-cyan-500/10 p-8 border border-accent/20">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/15 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        <div className="relative z-10">
+          <h1 className="text-4xl font-black mb-2" data-testid="text-assets-title">Asset Library</h1>
+          <p className="text-lg text-muted-foreground">Browse and use 200+ keywords to insert assets in your game</p>
+        </div>
       </div>
 
       {/* Search */}
