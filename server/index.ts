@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
@@ -60,41 +61,66 @@ app.use((req, res, next) => {
   next();
 });
 
-(async () => {
-  setupWebSocket(httpServer);
-  await registerRoutes(httpServer, app);
+export { app };
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+// Export a promise that resolves when the server is ready
+let setupPromise: Promise<void> | null = null;
 
-    res.status(status).json({ message });
-    throw err;
-  });
+export function setupServer() {
+  if (setupPromise) return setupPromise;
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (process.env.NODE_ENV === "production") {
-    serveStatic(app);
-  } else {
-    const { setupVite } = await import("./vite");
-    await setupVite(httpServer, app);
-  }
+  setupPromise = (async () => {
+    setupWebSocket(httpServer);
+    await registerRoutes(httpServer, app);
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || "5000", 10);
-  httpServer.listen(
-    {
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+      res.status(status).json({ message });
+      throw err;
+    });
+
+    // importantly only setup vite in development and after
+    // setting up all the other routes so the catch-all route
+    // doesn't interfere with the other routes
+    if (process.env.NODE_ENV === "production") {
+      // In Vercel, we let Vercel handle static files via vercel.json rewrites
+      // We only serve static files if NOT in Vercel (e.g. local production run)
+      if (!process.env.VERCEL) {
+        serveStatic(app);
+      }
+    } else {
+      const { setupVite } = await import("./vite");
+      await setupVite(httpServer, app);
+    }
+  })();
+
+  return setupPromise;
+}
+
+// Only start the server if this file is run directly
+// In Vercel serverless environment, we export the app instead
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  (async () => {
+    await setupServer();
+
+    // ALWAYS serve the app on the port specified in the environment variable PORT
+    // Other ports are firewalled. Default to 5000 if not specified.
+    // this serves both the API and the client.
+    // It is the only port that is not firewalled.
+    const port = parseInt(process.env.PORT || "5000", 10);
+    httpServer.listen(
       port,
-      host: "0.0.0.0",
-      reusePort: true,
-    },
-    () => {
-      log(`serving on port ${port}`);
-    },
-  );
-})();
+      "0.0.0.0",
+      () => {
+        log(`serving on port ${port}`);
+      },
+    );
+  })();
+} else {
+  // For Vercel, we still need to register routes
+  // But we don't call listen()
+  (async () => {
+    await setupServer();
+  })();
+}

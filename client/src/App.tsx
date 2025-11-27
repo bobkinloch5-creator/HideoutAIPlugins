@@ -9,8 +9,10 @@ import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/s
 import { AppSidebar } from "@/components/app-sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Footer } from "@/components/footer";
 
 import Landing from "@/pages/landing";
+import AuthPage from "@/pages/auth-page";
 import Dashboard from "@/pages/dashboard";
 import Projects from "@/pages/projects";
 import NewProject from "@/pages/new-project";
@@ -23,21 +25,6 @@ import Downloads from "@/pages/downloads";
 import Onboarding from "@/pages/onboarding";
 import NotFound from "@/pages/not-found";
 
-function LoadingScreen() {
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="space-y-4 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-primary/10 mx-auto flex items-center justify-center animate-pulse">
-          <div className="w-8 h-8 rounded-lg bg-primary/30" />
-        </div>
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-32 mx-auto" />
-          <Skeleton className="h-3 w-24 mx-auto" />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   const sidebarStyle = {
@@ -57,6 +44,7 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
           <main className="flex-1 p-6">
             {children}
           </main>
+          <Footer />
         </SidebarInset>
       </div>
     </SidebarProvider>
@@ -64,16 +52,13 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
 }
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return <LoadingScreen />;
-  }
+  const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
     return (
       <Switch>
         <Route path="/" component={Landing} />
+        <Route path="/auth" component={AuthPage} />
         <Route component={Landing} />
       </Switch>
     );

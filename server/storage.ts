@@ -8,6 +8,7 @@ import {
   pluginAnalytics,
   assetPreviews,
   type User,
+  type InsertUser,
   type UpsertUser,
   type Project,
   type InsertProject,
@@ -26,43 +27,46 @@ import { eq, desc, and, sql } from "drizzle-orm";
 export interface IStorage {
   // User operations (IMPORTANT: mandatory for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: InsertUser & { id?: string }): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
-  
+
   // Project operations
   getProjects(userId: string): Promise<Project[]>;
   getProject(id: string): Promise<Project | undefined>;
   createProject(project: InsertProject & { userId: string }): Promise<Project>;
   updateProject(id: string, data: Partial<Project>): Promise<Project | undefined>;
   deleteProject(id: string): Promise<void>;
-  
+
   // Command operations
   getCommands(projectId: string): Promise<Command[]>;
   getCommand(id: string): Promise<Command | undefined>;
   createCommand(command: InsertCommand): Promise<Command>;
-  
+
   // Code History operations
   getCodeHistory(projectId: string): Promise<CodeHistory[]>;
   getCodeHistoryVersion(projectId: string, version: number): Promise<CodeHistory | undefined>;
   saveCodeVersion(data: CodeHistory & { projectId: string; userId: string; code: string }): Promise<CodeHistory>;
   starCodeVersion(id: string, isStarred: boolean): Promise<CodeHistory | undefined>;
-  
+
   // Code Template operations
   getCodeTemplates(userId: string): Promise<CodeTemplate[]>;
   createCodeTemplate(data: { userId: string; name: string; code: string; category?: string; description?: string }): Promise<CodeTemplate>;
   deleteCodeTemplate(id: string): Promise<void>;
-  
+
   // Plugin Settings operations
   getPluginSettings(userId: string): Promise<PluginSettings | undefined>;
   upsertPluginSettings(data: PluginSettings & { userId: string }): Promise<PluginSettings>;
-  
+
   // Plugin Analytics operations
   trackAnalytics(data: { userId: string; featureName: string; action: string; gameType?: string; metadata?: any }): Promise<PluginAnalytic>;
   getAnalytics(userId: string, days: number): Promise<PluginAnalytic[]>;
-  
+
   // Asset Preview operations
   getAssetPreview(assetId: string): Promise<AssetPreview | undefined>;
   cacheAssetPreview(data: Omit<AssetPreview, 'id' | 'createdAt'>): Promise<AssetPreview>;
-  
+
   // Stats
   getUserStats(userId: string): Promise<{
     totalProjects: number;
@@ -76,6 +80,21 @@ export class DatabaseStorage implements IStorage {
   // User operations (IMPORTANT: mandatory for Replit Auth)
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async createUser(userData: InsertUser & { id?: string }): Promise<User> {
+    const [user] = await db.insert(users).values(userData).returning();
     return user;
   }
 
@@ -156,7 +175,7 @@ export class DatabaseStorage implements IStorage {
       .insert(commands)
       .values(commandData)
       .returning();
-    
+
     // Update project command count
     await db
       .update(projects)
@@ -166,7 +185,7 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date(),
       })
       .where(eq(projects.id, commandData.projectId));
-    
+
     return command;
   }
 
@@ -192,7 +211,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(codeHistory)
       .where(eq(codeHistory.projectId, data.projectId));
-    
+
     const [record] = await db
       .insert(codeHistory)
       .values({
@@ -337,11 +356,11 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(projects)
       .where(eq(projects.userId, userId));
-    
+
     const activeProjects = userProjects.filter(p => p.status === 'active');
     const totalCommands = activeProjects.reduce((sum, p) => sum + (p.commandCount || 0), 0);
     const totalAssets = activeProjects.reduce((sum, p) => sum + (p.assetCount || 0), 0);
-    
+
     return {
       totalProjects: userProjects.length,
       activeProjects: activeProjects.length,

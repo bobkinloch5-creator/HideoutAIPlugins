@@ -20,7 +20,7 @@
 local HttpService = game:GetService("HttpService")
 
 -- Configuration
-local API_BASE = "https://hide-bot.com/api"
+local API_BASE = "https://hideout-ai.vercel.app/api"
 local PLUGIN_NAME = "Hideout Bot Code Generator"
 local PLUGIN_VERSION = "1.0.0"
 local REQUEST_TIMEOUT = 30
@@ -370,7 +370,7 @@ end)
 
 -- Open Web App Button
 local openWebButton = createButton("Open hide-bot.com", function()
-  plugin:OpenUrl("https://hide-bot.com")
+  plugin:OpenUrl("https://hideout-ai.vercel.app")
   showStatus("Opening web app in browser...", Color3.fromRGB(200, 200, 100))
 end)
 
@@ -413,4 +413,4 @@ end)
 showStatus("Ready - Enter project ID and prompt", Color3.fromRGB(100, 200, 100))
 
 print("[Hideout Bot] Plugin v" .. PLUGIN_VERSION .. " loaded successfully!")
-print("[Hideout Bot] For help visit: https://hide-bot.com/docs")
+print("[Hideout Bot] For help visit: https://hideout-ai.vercel.app")

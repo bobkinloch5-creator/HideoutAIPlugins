@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./auth";
 import { generateRobloxCode, classifyPrompt } from "./gemini";
 import { insertProjectSchema, insertCommandSchema } from "@shared/schema";
 import { z } from "zod";
@@ -15,10 +15,15 @@ export async function registerRoutes(
   // Auth middleware
   await setupAuth(app);
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  // Auth routes - Modified to handle unauthenticated requests
+  app.get('/api/auth/user', async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      // Check if user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const userId = req.user.claims?.sub || req.user.id;
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
@@ -55,15 +60,15 @@ export async function registerRoutes(
     try {
       const userId = req.user.claims.sub;
       const project = await storage.getProject(req.params.id);
-      
+
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }
-      
+
       if (project.userId !== userId) {
         return res.status(403).json({ message: "Access denied" });
       }
-      
+
       res.json(project);
     } catch (error) {
       console.error("Error fetching project:", error);
@@ -75,14 +80,14 @@ export async function registerRoutes(
     try {
       const userId = req.user.claims.sub;
       const { name, description, projectType } = req.body;
-      
+
       const project = await storage.createProject({
         userId,
         name,
         description: description || "",
         projectType: projectType || "custom",
       });
-      
+
       res.status(201).json(project);
     } catch (error) {
       console.error("Error creating project:", error);
@@ -94,15 +99,15 @@ export async function registerRoutes(
     try {
       const userId = req.user.claims.sub;
       const project = await storage.getProject(req.params.id);
-      
+
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }
-      
+
       if (project.userId !== userId) {
         return res.status(403).json({ message: "Access denied" });
       }
-      
+
       const updatedProject = await storage.updateProject(req.params.id, req.body);
       res.json(updatedProject);
     } catch (error) {
@@ -115,15 +120,15 @@ export async function registerRoutes(
     try {
       const userId = req.user.claims.sub;
       const project = await storage.getProject(req.params.id);
-      
+
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }
-      
+
       if (project.userId !== userId) {
         return res.status(403).json({ message: "Access denied" });
       }
-      
+
       await storage.deleteProject(req.params.id);
       res.status(204).send();
     } catch (error) {
@@ -137,15 +142,15 @@ export async function registerRoutes(
     try {
       const userId = req.user.claims.sub;
       const project = await storage.getProject(req.params.id);
-      
+
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }
-      
+
       if (project.userId !== userId) {
         return res.status(403).json({ message: "Access denied" });
       }
-      
+
       const commands = await storage.getCommands(req.params.id);
       res.json(commands);
     } catch (error) {
@@ -159,27 +164,27 @@ export async function registerRoutes(
     try {
       const userId = req.user.claims.sub;
       const project = await storage.getProject(req.params.id);
-      
+
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }
-      
+
       if (project.userId !== userId) {
         return res.status(403).json({ message: "Access denied" });
       }
-      
+
       const { prompt } = req.body;
-      
+
       if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
         return res.status(400).json({ message: "Prompt is required" });
       }
-      
+
       // Generate code using Gemini
       const { code, commandType } = await generateRobloxCode({
         prompt: prompt.trim(),
         projectType: project.projectType,
       });
-      
+
       const command = await storage.createCommand({
         projectId: project.id,
         userId,
@@ -188,7 +193,7 @@ export async function registerRoutes(
         commandType,
         status: 'completed',
       });
-      
+
       res.status(201).json(command);
     } catch (error) {
       console.error("Error generating code:", error);
@@ -200,22 +205,22 @@ export async function registerRoutes(
   app.post('/api/commands', async (req, res) => {
     try {
       const { prompt, projectId } = req.body;
-      
+
       if (!projectId || !prompt) {
         return res.status(400).json({ message: "Project ID and prompt are required" });
       }
-      
+
       const project = await storage.getProject(projectId);
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }
-      
+
       // Generate code using Gemini
       const { code, commandType } = await generateRobloxCode({
         prompt: prompt.trim(),
         projectType: project.projectType,
       });
-      
+
       const command = await storage.createCommand({
         projectId: projectId,
         userId: project.userId,
@@ -224,8 +229,8 @@ export async function registerRoutes(
         commandType,
         status: 'completed',
       });
-      
-      res.status(201).json({ 
+
+      res.status(201).json({
         generatedCode: code,
         commandType: commandType,
         commandId: command.id
@@ -394,7 +399,7 @@ export async function registerRoutes(
     try {
       const days = parseInt(req.query.days) || 30;
       const analytics = await storage.getAnalytics(req.user.claims.sub, days);
-      
+
       const summary = {
         totalEvents: analytics.length,
         featureUsage: {} as any,
@@ -450,11 +455,11 @@ export async function registerRoutes(
     try {
       const code = req.body.code || '';
       const errors = [];
-      
+
       // Basic Lua syntax validation
       const unclosedIfs = (code.match(/\bif\b/g) || []).length - (code.match(/\bend\b/g) || []).length;
       const unclosedFunctions = (code.match(/\bfunction\b/g) || []).length - (code.match(/\bend\b/g) || []).length;
-      
+
       if (unclosedIfs > 0) errors.push({ type: 'syntax', line: 0, message: 'Unclosed if statements' });
       if (unclosedFunctions > 0) errors.push({ type: 'syntax', line: 0, message: 'Unclosed functions' });
       if (code.includes('local ') && !code.includes('Instance.new')) {
@@ -476,7 +481,7 @@ export async function registerRoutes(
       if (!project || project.userId !== req.user.claims.sub) {
         return res.status(403).json({ message: "Access denied" });
       }
-      
+
       // Return preview data with placeholder
       res.json({
         projectId: project.id,
@@ -532,7 +537,7 @@ export async function registerRoutes(
 // Generate demo code when OpenAI is not available
 function generateDemoCode(prompt: string, projectType: string, commandType: string): string {
   const lowerPrompt = prompt.toLowerCase();
-  
+
   // Obby templates
   if (projectType === 'obby' || lowerPrompt.includes('checkpoint')) {
     if (lowerPrompt.includes('checkpoint')) {
@@ -576,7 +581,7 @@ end
 
 print("Checkpoint system initialized!")`;
     }
-    
+
     if (lowerPrompt.includes('kill') || lowerPrompt.includes('brick')) {
       return `-- Kill Brick System
 -- Location: ServerScriptService
@@ -603,7 +608,7 @@ end
 print("Kill bricks initialized!")`;
     }
   }
-  
+
   // Tycoon templates
   if (projectType === 'tycoon' || lowerPrompt.includes('currency') || lowerPrompt.includes('cash')) {
     return `-- Tycoon Currency System
@@ -635,7 +640,7 @@ _G.AddCash = addCash
 
 print("Currency system initialized!")`;
   }
-  
+
   // Racing templates
   if (projectType === 'racing' || lowerPrompt.includes('lap') || lowerPrompt.includes('race')) {
     return `-- Racing Lap Counter System
@@ -661,7 +666,7 @@ end)
 
 print("Racing leaderstats initialized!")`;
   }
-  
+
   // Default generic template
   return `-- Generated Lua Code
 -- Location: ServerScriptService

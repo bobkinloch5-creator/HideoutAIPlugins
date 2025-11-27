@@ -2,12 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { 
-  Sparkles, 
-  Zap, 
-  Layers, 
-  Code2, 
-  Rocket, 
+import {
+  Sparkles,
+  Zap,
+  Layers,
+  Code2,
+  Rocket,
   Shield,
   ArrowRight,
   Play,
@@ -21,6 +21,7 @@ import {
   Wind
 } from "lucide-react";
 import { SiRoblox, SiDiscord } from "react-icons/si";
+import { Footer } from "@/components/footer";
 
 export default function Landing() {
   const features = [
@@ -114,13 +115,13 @@ export default function Landing() {
             <div className="flex items-center gap-3">
               <ThemeToggle />
               <div className="flex gap-2">
-                <a href="/api/discord/login">
+                <a href="/auth">
                   <Button variant="outline" size="sm" data-testid="button-discord-login">
                     <SiDiscord className="w-4 h-4 mr-2" />
                     Discord
                   </Button>
                 </a>
-                <a href="/api/login">
+                <a href="/auth">
                   <Button data-testid="button-login">
                     Sign In
                   </Button>
@@ -135,19 +136,19 @@ export default function Landing() {
       <section className="relative pt-32 pb-24 overflow-hidden">
         {/* Cartoon Background Elements */}
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
-        
+
         {/* Floating Shapes - Cartoon Style */}
         <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-primary/15 rounded-full blur-3xl opacity-40 animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/15 rounded-full blur-3xl opacity-40" />
         <div className="absolute top-1/3 right-1/3 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl opacity-30 animate-bounce" style={{ animationDuration: "4s" }} />
-        
+
         <div className="relative max-w-7xl mx-auto px-6">
           <div className="text-center max-w-4xl mx-auto">
             <Badge variant="secondary" className="mb-6 px-4 py-2 text-lg font-bold" data-testid="badge-version">
               <Star className="w-5 h-5 mr-2 fill-current" />
               Version 9.0 - Game Assembler 2.0
             </Badge>
-            
+
             <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-6 leading-tight" data-testid="text-hero-title">
               Build Any{" "}
               <span className="bg-gradient-to-r from-primary via-accent to-purple-500 bg-clip-text text-transparent">
@@ -155,21 +156,21 @@ export default function Landing() {
               </span>
               {" "}with AI
             </h1>
-            
+
             <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed" data-testid="text-hero-subtitle">
-              From <span className="text-primary font-semibold">Obbies</span> to <span className="text-accent font-semibold">Racing Games</span>, 
-              from <span className="text-purple-400 font-semibold">Tycoons</span> to <span className="text-blue-400 font-semibold">Custom Adventures</span>. 
+              From <span className="text-primary font-semibold">Obbies</span> to <span className="text-accent font-semibold">Racing Games</span>,
+              from <span className="text-purple-400 font-semibold">Tycoons</span> to <span className="text-blue-400 font-semibold">Custom Adventures</span>.
               The AI-powered platform that makes Roblox game development fast, fun, and accessible to everyone.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-              <a href="/api/login">
+              <a href="/auth">
                 <Button size="lg" className="text-lg px-8 py-6 glow-primary" data-testid="button-get-started">
-                  Sign In with Replit
+                  Get Started
                   <Flame className="w-5 h-5 ml-2" />
                 </Button>
               </a>
-              <a href="/api/discord/login">
+              <a href="/auth">
                 <Button size="lg" variant="outline" className="text-lg px-8 py-6" data-testid="button-discord-signup">
                   <SiDiscord className="w-5 h-5 mr-2" />
                   Sign In with Discord
@@ -209,7 +210,7 @@ export default function Landing() {
                   {/* Decorative Elements */}
                   <div className="absolute top-4 left-4 w-20 h-20 bg-primary/30 rounded-full blur-xl" />
                   <div className="absolute bottom-4 right-4 w-24 h-24 bg-accent/30 rounded-full blur-xl" />
-                  
+
                   <div className="text-center p-8 relative z-10">
                     <div className="flex items-center justify-center gap-4 mb-6">
                       <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center shadow-lg">
@@ -253,9 +254,9 @@ export default function Landing() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, index) => (
-              <Card 
-                key={index} 
-                className={`group hover-elevate transition-all duration-300 border-2 bg-gradient-to-br ${feature.color} border-primary/20 overflow-hidden`} 
+              <Card
+                key={index}
+                className={`group hover-elevate transition-all duration-300 border-2 bg-gradient-to-br ${feature.color} border-primary/20 overflow-hidden`}
                 data-testid={`card-feature-${index}`}
               >
                 <CardContent className="p-8">
@@ -294,7 +295,7 @@ export default function Landing() {
                 {index < steps.length - 1 && (
                   <div className="hidden md:block absolute top-8 left-[calc(50%+2rem)] right-[calc(-50%-2rem)] h-1 bg-gradient-to-r from-primary to-accent" />
                 )}
-                
+
                 <Card className="group hover-elevate relative z-10 border-2 border-primary/20 bg-gradient-to-br from-primary/10 to-transparent overflow-hidden">
                   <CardContent className="p-8">
                     <div className="flex items-center justify-center mb-6">
@@ -317,7 +318,7 @@ export default function Landing() {
         <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/10 to-primary/20 rounded-3xl" />
         <div className="absolute top-0 left-0 w-96 h-96 bg-primary/30 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent/30 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
-        
+
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
           <h2 className="text-5xl md:text-6xl font-black mb-6" data-testid="text-cta-title">
             Ready to Build?
@@ -343,23 +344,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-12 bg-muted/20">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <Bot className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-black">Hideout Bot</span>
-            </div>
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <a href="/docs" className="hover:text-foreground transition-colors">Docs</a>
-              <a href="/downloads" className="hover:text-foreground transition-colors">Downloads</a>
-              <a href="https://discord.gg/rZbtJJ8XYV" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
