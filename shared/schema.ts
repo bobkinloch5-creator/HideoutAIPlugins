@@ -88,6 +88,68 @@ export const systemTemplates = pgTable("system_templates", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Code History - Track all code versions and changes
+export const codeHistory = pgTable("code_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  code: text("code").notNull(),
+  codeHash: varchar("code_hash", { length: 64 }), // For detecting duplicates
+  version: integer("version").notNull().default(1),
+  description: varchar("description"),
+  isStarred: boolean("is_starred").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Code Templates - User's saved template snippets
+export const codeTemplates = pgTable("code_templates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  code: text("code").notNull(),
+  category: varchar("category", { length: 100 }), // checkpoint, leaderboard, spawn, etc.
+  description: text("description"),
+  usage: integer("usage").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Plugin Settings - User plugin preferences
+export const pluginSettings = pgTable("plugin_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }).unique(),
+  autoInsertCode: boolean("auto_insert_code").default(false),
+  defaultGameWidth: integer("default_game_width").default(100),
+  defaultGameHeight: integer("default_game_height").default(100),
+  defaultAssetScale: varchar("default_asset_scale", { length: 50 }).default("1.0"),
+  enableValidation: boolean("enable_validation").default(true),
+  enableRealTimeSync: boolean("enable_real_time_sync").default(true),
+  theme: varchar("theme", { length: 50 }).default("dark"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Plugin Analytics - Track usage and feature adoption
+export const pluginAnalytics = pgTable("plugin_analytics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  featureName: varchar("feature_name", { length: 255 }).notNull(), // asset_preview, smart_insertion, etc.
+  action: varchar("action", { length: 100 }).notNull(), // click, view, use, etc.
+  gameType: varchar("game_type", { length: 50 }), // obby, racing, tycoon, custom
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Asset Previews - Cached asset thumbnails and info
+export const assetPreviews = pgTable("asset_previews", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  assetId: varchar("asset_id", { length: 100 }).notNull().unique(),
+  assetName: varchar("asset_name", { length: 255 }).notNull(),
+  category: varchar("category", { length: 100 }).notNull(),
+  thumbnailUrl: varchar("thumbnail_url", { length: 500 }),
+  previewCode: text("preview_code"),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   projects: many(projects),
@@ -153,3 +215,9 @@ export type Asset = typeof assetLibrary.$inferSelect;
 
 export type InsertSystemTemplate = z.infer<typeof insertSystemTemplateSchema>;
 export type SystemTemplate = typeof systemTemplates.$inferSelect;
+
+export type CodeHistory = typeof codeHistory.$inferSelect;
+export type CodeTemplate = typeof codeTemplates.$inferSelect;
+export type PluginSettings = typeof pluginSettings.$inferSelect;
+export type PluginAnalytic = typeof pluginAnalytics.$inferSelect;
+export type AssetPreview = typeof assetPreviews.$inferSelect;
