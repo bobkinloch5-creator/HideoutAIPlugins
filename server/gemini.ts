@@ -172,7 +172,40 @@ export async function generateRobloxCode(options: GenerateCodeOptions): Promise<
   
   const systemPrompt = SYSTEM_TEMPLATES[projectType] || SYSTEM_TEMPLATES.custom;
   
+  const instructionsForExplanation = `
+IMPORTANT: After generating the code, ALWAYS provide a detailed breakdown using this format:
+
+### EXPLANATION OF YOUR CODE:
+
+**What It Does:**
+- Clear, simple explanation of the overall functionality
+
+**Key Components:**
+- List 3-5 main features/systems the code implements
+- Explain what each does and why it matters
+
+**How To Use:**
+- Step-by-step instructions for implementation
+- Where to paste the code
+- Any manual setup required
+
+**Advanced Features Included:**
+- List any optimization, anti-cheat, or advanced systems
+- Explain performance benefits
+
+**Customization Tips:**
+- 2-3 ways to modify the code for different gameplay
+- Examples with specific numbers
+
+**Code Structure:**
+- Breakdown of main functions and what each does
+- Any helper functions or utilities
+
+Then provide the FULL COMPLETE CODE BLOCK.`;
+  
   const fullPrompt = `${systemPrompt}
+
+${instructionsForExplanation}
 
 Available asset keywords that can be referenced: ${ASSET_KEYWORDS.join(", ")}
 

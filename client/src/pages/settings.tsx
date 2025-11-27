@@ -53,14 +53,17 @@ export default function Settings() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold" data-testid="text-settings-title">Settings</h1>
-        <p className="text-muted-foreground">
-          Manage your account and preferences
-        </p>
+    <div className="space-y-8">
+      {/* Fancy Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-500/20 via-primary/10 to-accent/10 p-8 border border-orange-500/20">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/15 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        <div className="relative z-10">
+          <h1 className="text-4xl font-black mb-2" data-testid="text-settings-title">Settings</h1>
+          <p className="text-lg text-muted-foreground">Manage your account and preferences</p>
+        </div>
       </div>
+
+      <div className="max-w-3xl mx-auto space-y-6">
 
       {/* Profile Section */}
       <Card>

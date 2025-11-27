@@ -137,29 +137,33 @@ export default function NewProject() {
   const selectedTypeData = projectTypes.find(t => t.type === selectedType);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={() => step === 1 ? navigate("/") : handleBack()}
-          data-testid="button-back"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold" data-testid="text-new-project-title">
-            {step === 1 ? "Choose Project Type" : "Project Details"}
+    <div className="space-y-8">
+      {/* Fancy Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-pink-500/20 via-accent/10 to-purple-500/10 p-8 border border-pink-500/20">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-pink-500/15 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        <div className="relative z-10">
+          <h1 className="text-4xl font-black mb-2" data-testid="text-new-project-title">
+            {step === 1 ? "Create New Project" : "Project Details"}
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-lg text-muted-foreground">
             {step === 1 
-              ? "Select a template to get started with your new game"
-              : `Creating a new ${selectedTypeData?.title}`
+              ? "Choose your game type and start building with AI"
+              : `Setting up your new ${selectedTypeData?.title}`
             }
           </p>
         </div>
       </div>
+
+      {/* Back Button */}
+      <Button 
+        variant="ghost" 
+        className="gap-2"
+        onClick={() => step === 1 ? navigate("/") : handleBack()}
+        data-testid="button-back"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back
+      </Button>
 
       {/* Step Indicator */}
       <div className="flex items-center gap-2">

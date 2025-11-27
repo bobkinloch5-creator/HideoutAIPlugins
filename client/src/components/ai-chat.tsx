@@ -27,6 +27,15 @@ interface AIChatProps {
   onCommandGenerated?: () => void;
 }
 
+interface AIMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  code?: string;
+  explanation?: string;
+  features?: string[];
+}
+
 export function AIChat({ projectId, projectType, onCommandGenerated }: AIChatProps) {
   const { toast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -34,10 +43,18 @@ export function AIChat({ projectId, projectType, onCommandGenerated }: AIChatPro
   const { isConnected, sendToPlugin } = usePluginConnection(projectId);
   
   const [prompt, setPrompt] = useState("");
-  const [messages, setMessages] = useState<Array<{ id: string; role: "user" | "assistant"; content: string; code?: string }>>(
-    [{ id: "1", role: "assistant", content: "Hi! I'm your AI code generator. Describe what you want to build, and I'll generate production-ready Roblox Lua code for you. The plugin is " + (isConnected ? "connected!" : "connecting...") }]
+  const [messages, setMessages] = useState<AIMessage[]>(
+    [{ id: "1", role: "assistant", content: "Hi! I'm your AI code generator. Describe what you want to build, and I'll generate production-ready Roblox Lua code with detailed explanations of every feature. The plugin is " + (isConnected ? "connected!" : "connecting...") }]
   );
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  
+  // Parse AI response to extract explanation and code
+  const parseAIResponse = (fullResponse: string): { explanation: string; code: string } => {
+    const codeMatch = fullResponse.match(/```lua\n([\s\S]*?)```/);
+    const code = codeMatch ? codeMatch[1].trim() : "";
+    const explanation = fullResponse.replace(/```lua[\s\S]*?```/g, "").trim();
+    return { explanation, code };
+  };
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -67,13 +84,13 @@ export function AIChat({ projectId, projectType, onCommandGenerated }: AIChatPro
       return response.json();
     },
     onSuccess: (data) => {
-      const assistantMsg = {
+      const { explanation, code } = parseAIResponse(data.code);
+      const assistantMsg: AIMessage = {
         id: Math.random().toString(),
         role: "assistant" as const,
-        content: isConnected 
-          ? "I've generated your code and sent it to your plugin! Check your Roblox Studio."
-          : "I've generated your code! Copy it and paste it into Roblox Studio.",
-        code: data.code
+        content: "I've generated your code! Here's what it does:",
+        code: code || data.code,
+        explanation: explanation || data.code
       };
       setMessages(prev => [...prev, assistantMsg]);
       
@@ -181,6 +198,28 @@ export function AIChat({ projectId, projectType, onCommandGenerated }: AIChatPro
                   )}
                   <p className={msg.role === "user" ? "text-base" : "text-foreground leading-relaxed"}>{msg.content}</p>
                   
+                  {msg.explanation && (
+                    <div className="mt-4 space-y-3 text-sm text-foreground/90">
+                      <div className="prose prose-sm dark:prose-invert max-w-none">
+                        {msg.explanation.split('\n').map((line, idx) => (
+                          line.trim() && (
+                            <div key={idx} className="mb-2">
+                              {line.startsWith('###') ? (
+                                <div className="font-bold text-primary mt-3 mb-1 text-base">{line.replace(/#+\s*/, '')}</div>
+                              ) : line.startsWith('**') ? (
+                                <div className="font-semibold text-accent">{line.replace(/\*\*/g, '')}</div>
+                              ) : line.startsWith('-') ? (
+                                <div className="ml-4 text-foreground/80">• {line.replace(/^-\s*/, '')}</div>
+                              ) : (
+                                <div>{line}</div>
+                              )}
+                            </div>
+                          )
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
                   {msg.code && (
                     <div className="mt-4 space-y-2">
                       <Separator className={msg.role === "user" ? "bg-white/20" : ""} />
@@ -188,7 +227,7 @@ export function AIChat({ projectId, projectType, onCommandGenerated }: AIChatPro
                         <div className="flex items-center justify-between bg-muted px-4 py-2 border-b border-primary/20">
                           <span className="text-xs font-bold text-muted-foreground flex items-center gap-2">
                             <Code2 className="w-3 h-3" />
-                            Lua Code
+                            Production-Ready Lua Code
                           </span>
                           <Button
                             size="sm"
