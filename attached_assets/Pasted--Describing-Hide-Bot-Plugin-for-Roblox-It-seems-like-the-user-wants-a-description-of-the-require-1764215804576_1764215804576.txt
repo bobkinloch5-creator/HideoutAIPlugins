@@ -1,0 +1,226 @@
+**Describing Hide Bot Plugin for Roblox**
+
+It seems like the user wants a description of the requirements and functionality for a Roblox plugin, "Hide Bot." Specifically, they want a plugin that helps build games, inserts toolbox assets, has prompt chat, and more. I should structure this with requirements, features, scope, and UX flows. It would be helpful to include an action plan and example code, like a Lua plugin skeleton, while ensuring everything follows Roblox's ToS. I’ll avoid writing too much text—just concise and clear sections.
+### Hide Bot Roblox plugin concept
+
+You’re envisioning a “build-for-you” assistant inside Studio that can take natural-language prompts, scaffold game projects, insert assets, wire up systems, and keep a running chat to refine changes. Here’s a clear, actionable description you can share with collaborators—or use as a product spec.
+
+---
+
+### Core goals and scope
+
+- **Mission:** A Roblox Studio plugin that turns prompts into playable, organized projects—end to end.
+- **Audience:** Solo creators and small teams who want rapid iteration, consistent structure, and hands-off asset placement.
+- **Outcomes:** Faster prototyping, clean hierarchies, safe asset insertion, and iterative chat-driven edits without leaving Studio.
+
+---
+
+### Key features
+
+- **Prompt chat:** A docked panel where you type goals (“build a low-poly obby with 10 stages and checkpoints”) and see the plan, diffs, and next steps.
+- **Project scaffolding:** Auto-creates folders, scripts, ModuleScripts, and tags with a consistent, documented hierarchy.
+- **Asset insertion:** Finds and inserts curated assets (Models, Decals, Animations) with placement rules and safety checks.
+- **System wiring:** Generates core systems (spawn, checkpoints, datastores, UI) and links them with signals/events.
+- **Iterative edits:** “Make platforms 20% wider”, “swap skybox”, “add tutorial UI”—applies changes safely and shows what changed.
+- **Validation and rollback:** Dry-run previews, “Apply” button, changelog, and one-click undo per operation.
+- **Presets and templates:** Save/load style packs (e.g., Classic MMO, Low-Poly Obby, Social Hangout).
+- **Placement rules:** Deterministic placement (grid, bounds, no overlaps), static/dynamic asset grouping, LOD naming, and tags.
+- **Packaging/export:** Creates clean packages, Prompts a version bump, and writes Release Notes in a markdown panel.
+- **Compliance guardrails:** Warns on unsafe models, external scripts, or disallowed behaviors; uses trusted sources only.
+
+---
+
+### Architecture and design
+
+#### Plugin UI
+- **Docked chat panel:** Prompt input, response stream, operations queue, logs.
+- **Inspector:** Hierarchy preview (what will be created/modified), dependency graph, warnings.
+- **Templates tab:** Choose presets, configure rules (theme, scale, spacing, tags).
+- **Changelog:** Timestamped entries, per-step diffs, and one-click rollback.
+
+#### Runtime logic
+- **Command pipeline:** Parse prompt → plan ops → validate → preview → apply → log.
+- **Safety layer:** Asset vetting, permission checks, sandboxed script generation, network-free at runtime.
+- **Placement engine:** Deterministic transforms, snap-to-grid, bounds checks, nav/occlusion awareness, tag-based grouping.
+- **Content schema:** Standard folder layout, tags, and naming for maintainability.
+
+```text
+ReplicatedStorage/
+  Systems/
+    Checkpoints.module
+    Spawns.module
+    UI.module
+  Assets/
+    Props/
+    Enemies/
+    FX/
+ServerScriptService/
+  GameInit.server
+  SaveService.server
+StarterPlayer/
+  StarterPlayerScripts/
+    Controls.client
+StarterGui/
+  HUD.gui
+CollectionService Tags:
+  "SpawnPoint", "Checkpoint", "Interactable", "Enemy", "Prop", "UI"
+```
+
+---
+
+### User flows
+
+- **New project (“Build any game” quick-start):**
+  - **Prompt:** “Create a classic MMO hub: central plaza, 4 faction halls, quest board, NPCs, and basic HUD.”
+  - **Steps:** Plan → Preview hierarchy → Insert core assets → Generate systems → Apply → Test.
+  - **Result:** Playable hub with documented modules and tags, ready for expansion.
+
+- **Insert from toolbox safely:**
+  - **Prompt:** “Add 12 low-poly trees around the plaza, evenly spaced, no overlaps.”
+  - **Checks:** Source trust, script scan, poly/size, placement bounds → Preview → Apply.
+
+- **Iterate quickly:**
+  - **Prompt:** “Widen plaza paths by 20%, move quest board closer to spawn, add tutorial pop-up.”
+  - **Ops:** Transform set, rewire UI, update nav → Diff → Apply.
+
+- **Package and release:**
+  - **Action:** “Package version 0.2—note changes and export presets.”
+  - **Output:** Versioned package, Release Notes, template saved.
+
+---
+
+### Example plugin skeleton (Luau)
+
+```lua
+--!strict
+-- Hide Bot: Prompt-driven builder plugin (skeleton)
+
+local Toolbar = plugin:CreateToolbar("Hide Bot")
+local OpenButton = Toolbar:CreateButton("Open", "Open Hide Bot", "rbxassetid://123456")
+local DockInfo = DockWidgetPluginGuiInfo.new(Enum.InitialDockState.Left, true, true, 300, 500, 200, 200)
+local Gui = plugin:CreateDockWidgetPluginGui("HideBotDock", DockInfo)
+Gui.Title = "Hide Bot"
+
+-- UI
+local Screen = Instance.new("Frame")
+Screen.Size = UDim2.fromScale(1,1)
+Screen.Parent = Gui
+
+local PromptBox = Instance.new("TextBox")
+PromptBox.PlaceholderText = "Describe what to build..."
+PromptBox.Size = UDim2.new(1, 0, 0, 32)
+PromptBox.Parent = Screen
+
+local RunButton = Instance.new("TextButton")
+RunButton.Text = "Plan"
+RunButton.Size = UDim2.new(0, 80, 0, 32)
+RunButton.Position = UDim2.new(1, -90, 0, 0)
+RunButton.Parent = Screen
+
+local Log = Instance.new("ScrollingFrame")
+Log.Size = UDim2.new(1, 0, 1, -40)
+Log.Position = UDim2.new(0, 0, 0, 40)
+Log.Parent = Screen
+
+-- Ops queue
+type Op = { name: string, fn: () -> () }
+local Ops: {Op} = {}
+
+local function logLine(text: string)
+	local lbl = Instance.new("TextLabel")
+	lbl.Size = UDim2.new(1, -10, 0, 20)
+	lbl.TextXAlignment = Enum.TextXAlignment.Left
+	lbl.Text = text
+	lbl.Parent = Log
+end
+
+-- Example: create scaffolding
+local function createScaffold()
+	logLine("Creating project scaffold...")
+	local ReplicatedStorage = game:GetService("ReplicatedStorage")
+	local ServerScriptService = game:GetService("ServerScriptService")
+	local StarterPlayer = game:GetService("StarterPlayer")
+	local StarterGui = game:GetService("StarterGui")
+	local CollectionService = game:GetService("CollectionService")
+
+	local Systems = Instance.new("Folder")
+	Systems.Name = "Systems"
+	Systems.Parent = ReplicatedStorage
+
+	local Assets = Instance.new("Folder")
+	Assets.Name = "Assets"
+	Assets.Parent = ReplicatedStorage
+
+	local GameInit = Instance.new("Script")
+	GameInit.Name = "GameInit"
+	GameInit.Parent = ServerScriptService
+	GameInit.Source = [[
+		print("[Hide Bot] GameInit loaded")
+	]]
+
+	local HUD = Instance.new("ScreenGui")
+	HUD.Name = "HUD"
+	HUD.Parent = StarterGui
+
+	-- Tag example
+	local spawn = Instance.new("Part")
+	spawn.Name = "SpawnPoint"
+	spawn.Anchored = true
+	spawn.Position = Vector3.new(0, 5, 0)
+	spawn.Parent = workspace
+	CollectionService:AddTag(spawn, "SpawnPoint")
+
+	logLine("Scaffold complete.")
+end
+
+-- Example: placement rules
+local function placeGrid(modelTemplate: Instance, count: number, spacing: number)
+	logLine(string.format("Placing %d assets on grid...", count))
+	for i = 1, count do
+		local m = modelTemplate:Clone()
+		local x = (i-1) % math.max(1, math.floor(math.sqrt(count)))
+		local z = math.floor((i-1) / math.max(1, math.floor(math.sqrt(count))))
+		m:SetPrimaryPartCFrame(CFrame.new(x * spacing, 0, z * spacing))
+		m.Parent = workspace
+	end
+	logLine("Placement done.")
+end
+
+-- Parse prompt to ops (stub)
+local function planFromPrompt(prompt: string)
+	Ops = {}
+	table.insert(Ops, { name = "Scaffold", fn = createScaffold })
+	-- TODO: add asset vetting, toolbox sourcing, system generation, diffs
+	logLine("Plan ready: Scaffold")
+end
+
+RunButton.MouseButton1Click:Connect(function()
+	local text = PromptBox.Text
+	if text == "" then
+		logLine("Enter a prompt to continue.")
+		return
+	end
+	logLine("Planning for: " .. text)
+	planFromPrompt(text)
+	for _, op in ipairs(Ops) do
+		logLine("Running: " .. op.name)
+		op.fn()
+	end
+	logLine("All operations complete.")
+end)
+
+OpenButton.Click:Connect(function()
+	Gui.Enabled = not Gui.Enabled
+end)
+```
+
+---
+
+### Implementation roadmap
+
+- **Milestone 1 (MVP):** Docked chat, scaffolding, deterministic placement, previews, basic rollback.
+- **Milestone 2:** Safe asset insertion with curation, script scanning, and placement rules library.
+- **Milestone 3:** System generation (spawns, checkpoints, UI), iterative edit commands, diffs.
+- **Milestone 4:** Templates/presets, packaging/export, release notes, and project-wide refactors.
+
+If you want, I can tailor templates for your classic MMORPG workflow—factions, quest hubs, progression folders, and AI-driven content hooks—so Hide Bot speaks your language from day one.
