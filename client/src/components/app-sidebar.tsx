@@ -35,8 +35,10 @@ import {
   Bot,
   Plug,
   Copy,
-  Check
+  Check,
+  HelpCircle
 } from "lucide-react";
+import { SiDiscord } from "react-icons/si";
 import { useState } from "react";
 
 const navigationItems = [
@@ -201,7 +203,22 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-2">
+      <SidebarFooter className="p-2 space-y-2">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <a 
+              href="https://discord.gg/rZbtJJ8XYV" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="w-full"
+            >
+              <SidebarMenuButton className="w-full justify-start" data-testid="button-discord">
+                <SiDiscord className="w-4 h-4" />
+                <span>Join Discord</span>
+              </SidebarMenuButton>
+            </a>
+          </SidebarMenuItem>
+        </SidebarMenu>
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
