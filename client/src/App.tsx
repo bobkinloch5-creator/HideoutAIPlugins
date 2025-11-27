@@ -18,6 +18,7 @@ import ProjectDetail from "@/pages/project-detail";
 import Assets from "@/pages/assets";
 import Docs from "@/pages/docs";
 import Settings from "@/pages/settings";
+import Downloads from "@/pages/downloads";
 import NotFound from "@/pages/not-found";
 
 function LoadingScreen() {
@@ -85,6 +86,7 @@ function Router() {
         <Route path="/project/:id" component={ProjectDetail} />
         <Route path="/assets" component={Assets} />
         <Route path="/docs" component={Docs} />
+        <Route path="/downloads" component={Downloads} />
         <Route path="/settings" component={Settings} />
         <Route component={NotFound} />
       </Switch>
