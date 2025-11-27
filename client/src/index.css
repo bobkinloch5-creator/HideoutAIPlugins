@@ -4,19 +4,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Optimized CSS Cursor - No Lag */
+/* Default cursor hidden handled by JS component */
 html {
-  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%236366f1" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2" fill="%236366f1"/></svg>') 12 12, auto;
-}
-
-a,
-button,
-[role="button"],
-[class*="cursor-pointer"],
-input[type="checkbox"],
-input[type="radio"],
-select {
-  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="%236366f1" stroke="%236366f1" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>') 12 12, pointer;
+  /* cursor: none; set by JS */
 }
 
 /* LIGHT MODE - Hideout Bot Premium Theme */
