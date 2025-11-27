@@ -14,6 +14,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { AIChat } from "@/components/ai-chat";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -205,161 +206,22 @@ export default function ProjectDetail() {
       </div>
 
       {/* Main Content */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Left Panel - AI Prompt */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-primary" />
-                AI Game Builder
-              </CardTitle>
-              <CardDescription>
-                Describe what you want to build and let AI generate the Lua code
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="relative">
-                <Textarea
-                  ref={textareaRef}
-                  placeholder="e.g., Create a checkpoint system with 10 stages, each stage should have a spawn point and update the player's leaderstat when touched..."
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  rows={6}
-                  className="resize-none pr-12 font-mono text-sm"
-                  data-testid="input-prompt"
-                />
-                <Button
-                  size="icon"
-                  className="absolute bottom-3 right-3"
-                  onClick={handleGenerate}
-                  disabled={generateMutation.isPending || !prompt.trim()}
-                  data-testid="button-generate"
-                >
-                  {generateMutation.isPending ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Press Cmd/Ctrl + Enter to generate
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Latest Command Output */}
-          {commands && commands.length > 0 && (
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
-                <div>
-                  <CardTitle className="text-base">Latest Generated Code</CardTitle>
-                  <CardDescription>
-                    Copy this code to your Roblox Studio plugin
-                  </CardDescription>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => copyCode(commands[0].generatedCode, commands[0].id)}
-                  data-testid="button-copy-latest"
-                >
-                  {copiedId === commands[0].id ? (
-                    <>
-                      <Check className="w-4 h-4 mr-2 text-primary" />
-                      Copied
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-4 h-4 mr-2" />
-                      Copy
-                    </>
-                  )}
-                </Button>
-              </CardHeader>
-              <CardContent>
-                <div className="relative">
-                  <ScrollArea className="h-64 rounded-lg bg-muted/50 p-4">
-                    <pre className="font-mono text-sm whitespace-pre-wrap" data-testid="text-generated-code">
-                      {commands[0].generatedCode}
-                    </pre>
-                  </ScrollArea>
-                </div>
-                <div className="flex items-center gap-4 mt-4 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {new Date(commands[0].createdAt!).toLocaleString()}
-                  </span>
-                  <Badge variant="secondary" className="text-xs">
-                    {commands[0].commandType || "general"}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Command History */}
-          {commands && commands.length > 1 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <History className="w-5 h-5" />
-                  Command History
-                </CardTitle>
-                <CardDescription>
-                  Previous generated commands for this project
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Accordion type="single" collapsible className="w-full">
-                  {commands.slice(1).map((command, index) => (
-                    <AccordionItem key={command.id} value={command.id}>
-                      <AccordionTrigger className="hover:no-underline">
-                        <div className="flex items-center gap-3 text-left">
-                          <Code2 className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                          <div className="min-w-0">
-                            <p className="font-medium truncate">{command.prompt.slice(0, 60)}...</p>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(command.createdAt!).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <div className="space-y-3 pt-2">
-                          <div className="flex items-center justify-between">
-                            <Badge variant="secondary">{command.commandType || "general"}</Badge>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => copyCode(command.generatedCode, command.id)}
-                            >
-                              {copiedId === command.id ? (
-                                <Check className="w-4 h-4 text-primary" />
-                              ) : (
-                                <Copy className="w-4 h-4" />
-                              )}
-                            </Button>
-                          </div>
-                          <ScrollArea className="h-40 rounded-lg bg-muted/50 p-3">
-                            <pre className="font-mono text-xs whitespace-pre-wrap">
-                              {command.generatedCode}
-                            </pre>
-                          </ScrollArea>
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-              </CardContent>
-            </Card>
-          )}
+      <div className="grid lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
+        {/* Left Panel - AI Chat */}
+        <div className="lg:col-span-2">
+          <AIChat 
+            projectId={id!} 
+            projectType={project.projectType}
+            onCommandGenerated={() => {
+              queryClient.invalidateQueries({ queryKey: ["/api/projects", id] });
+              queryClient.invalidateQueries({ queryKey: ["/api/projects", id, "commands"] });
+              queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
+            }}
+          />
         </div>
 
         {/* Right Panel - Project Info */}
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-y-auto">
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Project Details</CardTitle>
