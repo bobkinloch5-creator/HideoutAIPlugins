@@ -147,9 +147,9 @@ export function AIChat({ projectId, projectType, onCommandGenerated }: AIChatPro
   };
 
   return (
-    <Card className="border-2 border-primary/20 overflow-hidden flex flex-col h-full bg-gradient-to-b from-card to-muted/20">
+    <Card className="border-2 border-primary/20 overflow-hidden flex flex-col h-full bg-gradient-to-b from-card to-muted/20 hover-elevate transition-all">
       {/* Header */}
-      <CardHeader className="bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 border-b border-primary/20 pb-4">
+      <CardHeader className="bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 border-b border-primary/20 pb-4 hover:from-primary/15 hover:via-accent/10 hover:to-primary/15 transition-all">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center animate-pulse">
@@ -224,7 +224,7 @@ export function AIChat({ projectId, projectType, onCommandGenerated }: AIChatPro
                     <div className="mt-4 space-y-2">
                       <Separator className={msg.role === "user" ? "bg-white/20" : ""} />
                       <div className="bg-background rounded-lg border border-primary/30 overflow-hidden">
-                        <div className="flex items-center justify-between bg-muted px-4 py-2 border-b border-primary/20">
+                        <div className="flex items-center justify-between bg-muted px-4 py-2 border-b border-primary/20 hover:bg-muted/80 transition-colors">
                           <span className="text-xs font-bold text-muted-foreground flex items-center gap-2">
                             <Code2 className="w-3 h-3" />
                             Production-Ready Lua Code
@@ -232,7 +232,7 @@ export function AIChat({ projectId, projectType, onCommandGenerated }: AIChatPro
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-6 px-2 text-xs"
+                            className="h-6 px-2 text-xs hover:bg-primary/20 transition-colors"
                             onClick={() => copyCode(msg.code!, msg.id)}
                             data-testid={`button-copy-code-${msg.id}`}
                           >

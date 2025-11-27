@@ -4,6 +4,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom Cursor */
+html {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%236366f1" stroke-width="2"><path d="M3 3l18 18M3 21l18-18"/></svg>') 12 12, auto;
+}
+
+a, button, [role="button"], [class*="cursor-pointer"], input[type="checkbox"], input[type="radio"] {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="%236366f1" stroke="%236366f1" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg>') 12 12, pointer;
+}
+
 /* LIGHT MODE - Hideout Bot Premium Theme */
 :root {
   --button-outline: rgba(0,0,0, .10);

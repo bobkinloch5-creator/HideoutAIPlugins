@@ -203,6 +203,7 @@ export default function Settings() {
       <p className="text-center text-sm text-muted-foreground">
         © 2025 King_davez - All Rights Reserved
       </p>
+      </div>
     </div>
   );
 }
