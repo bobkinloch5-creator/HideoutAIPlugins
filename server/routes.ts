@@ -272,6 +272,260 @@ export async function registerRoutes(
     }
   });
 
+  // Code History endpoints (Improvement #8)
+  app.get('/api/projects/:projectId/history', isAuthenticated, async (req: any, res) => {
+    try {
+      const history = await storage.getCodeHistory(req.params.projectId);
+      res.json(history);
+    } catch (error) {
+      console.error("Error fetching code history:", error);
+      res.status(500).json({ message: "Failed to fetch code history" });
+    }
+  });
+
+  app.post('/api/projects/:projectId/history/:version/compare', isAuthenticated, async (req: any, res) => {
+    try {
+      const v1 = await storage.getCodeHistoryVersion(req.params.projectId, parseInt(req.params.version));
+      const v2 = await storage.getCodeHistoryVersion(req.params.projectId, parseInt(req.body.compareVersion));
+      res.json({ v1, v2 });
+    } catch (error) {
+      console.error("Error comparing versions:", error);
+      res.status(500).json({ message: "Failed to compare versions" });
+    }
+  });
+
+  app.patch('/api/code-history/:id/star', isAuthenticated, async (req: any, res) => {
+    try {
+      const starred = await storage.starCodeVersion(req.params.id, req.body.isStarred);
+      res.json(starred);
+    } catch (error) {
+      console.error("Error starring version:", error);
+      res.status(500).json({ message: "Failed to star version" });
+    }
+  });
+
+  // Code Templates endpoints (Improvement #3)
+  app.get('/api/templates', isAuthenticated, async (req: any, res) => {
+    try {
+      const templates = await storage.getCodeTemplates(req.user.claims.sub);
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching templates:", error);
+      res.status(500).json({ message: "Failed to fetch templates" });
+    }
+  });
+
+  app.post('/api/templates', isAuthenticated, async (req: any, res) => {
+    try {
+      const template = await storage.createCodeTemplate({
+        userId: req.user.claims.sub,
+        name: req.body.name,
+        code: req.body.code,
+        category: req.body.category,
+        description: req.body.description,
+      });
+      res.status(201).json(template);
+    } catch (error) {
+      console.error("Error creating template:", error);
+      res.status(500).json({ message: "Failed to create template" });
+    }
+  });
+
+  app.delete('/api/templates/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      await storage.deleteCodeTemplate(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting template:", error);
+      res.status(500).json({ message: "Failed to delete template" });
+    }
+  });
+
+  // Plugin Settings endpoints (Improvement #6)
+  app.get('/api/plugin-settings', isAuthenticated, async (req: any, res) => {
+    try {
+      const settings = await storage.getPluginSettings(req.user.claims.sub) || {
+        autoInsertCode: false,
+        defaultGameWidth: 100,
+        defaultGameHeight: 100,
+        defaultAssetScale: "1.0",
+        enableValidation: true,
+        enableRealTimeSync: true,
+        theme: "dark",
+      };
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+      res.status(500).json({ message: "Failed to fetch settings" });
+    }
+  });
+
+  app.patch('/api/plugin-settings', isAuthenticated, async (req: any, res) => {
+    try {
+      const settings = await storage.upsertPluginSettings({
+        userId: req.user.claims.sub,
+        ...req.body,
+      });
+      res.json(settings);
+    } catch (error) {
+      console.error("Error updating settings:", error);
+      res.status(500).json({ message: "Failed to update settings" });
+    }
+  });
+
+  // Analytics endpoints (Improvement #10)
+  app.post('/api/analytics/track', isAuthenticated, async (req: any, res) => {
+    try {
+      const analytic = await storage.trackAnalytics({
+        userId: req.user.claims.sub,
+        featureName: req.body.featureName,
+        action: req.body.action,
+        gameType: req.body.gameType,
+        metadata: req.body.metadata,
+      });
+      res.status(201).json(analytic);
+    } catch (error) {
+      console.error("Error tracking analytics:", error);
+      res.status(500).json({ message: "Failed to track analytics" });
+    }
+  });
+
+  app.get('/api/analytics', isAuthenticated, async (req: any, res) => {
+    try {
+      const days = parseInt(req.query.days) || 30;
+      const analytics = await storage.getAnalytics(req.user.claims.sub, days);
+      
+      const summary = {
+        totalEvents: analytics.length,
+        featureUsage: {} as any,
+        actionBreakdown: {} as any,
+        gameTypeBreakdown: {} as any,
+      };
+
+      analytics.forEach(event => {
+        summary.featureUsage[event.featureName] = (summary.featureUsage[event.featureName] || 0) + 1;
+        summary.actionBreakdown[event.action] = (summary.actionBreakdown[event.action] || 0) + 1;
+        if (event.gameType) {
+          summary.gameTypeBreakdown[event.gameType] = (summary.gameTypeBreakdown[event.gameType] || 0) + 1;
+        }
+      });
+
+      res.json(summary);
+    } catch (error) {
+      console.error("Error fetching analytics:", error);
+      res.status(500).json({ message: "Failed to fetch analytics" });
+    }
+  });
+
+  // Asset Preview endpoints (Improvement #2)
+  app.get('/api/asset-preview/:assetId', async (req, res) => {
+    try {
+      const preview = await storage.getAssetPreview(req.params.assetId);
+      res.json(preview || { message: "Asset preview not cached" });
+    } catch (error) {
+      console.error("Error fetching asset preview:", error);
+      res.status(500).json({ message: "Failed to fetch asset preview" });
+    }
+  });
+
+  app.post('/api/asset-preview', async (req, res) => {
+    try {
+      const preview = await storage.cacheAssetPreview({
+        assetId: req.body.assetId,
+        assetName: req.body.assetName,
+        category: req.body.category,
+        thumbnailUrl: req.body.thumbnailUrl,
+        previewCode: req.body.previewCode,
+        metadata: req.body.metadata,
+      });
+      res.status(201).json(preview);
+    } catch (error) {
+      console.error("Error caching asset preview:", error);
+      res.status(500).json({ message: "Failed to cache asset preview" });
+    }
+  });
+
+  // Code Validation endpoint (Improvement #5)
+  app.post('/api/validate-code', isAuthenticated, async (req: any, res) => {
+    try {
+      const code = req.body.code || '';
+      const errors = [];
+      
+      // Basic Lua syntax validation
+      const unclosedIfs = (code.match(/\bif\b/g) || []).length - (code.match(/\bend\b/g) || []).length;
+      const unclosedFunctions = (code.match(/\bfunction\b/g) || []).length - (code.match(/\bend\b/g) || []).length;
+      
+      if (unclosedIfs > 0) errors.push({ type: 'syntax', line: 0, message: 'Unclosed if statements' });
+      if (unclosedFunctions > 0) errors.push({ type: 'syntax', line: 0, message: 'Unclosed functions' });
+      if (code.includes('local ') && !code.includes('Instance.new')) {
+        // Warn if using local variables but no Instance creation
+        errors.push({ type: 'warning', line: 0, message: 'Consider if you need instance creation' });
+      }
+
+      res.json({ valid: errors.filter(e => e.type === 'error').length === 0, errors });
+    } catch (error) {
+      console.error("Error validating code:", error);
+      res.status(500).json({ message: "Failed to validate code" });
+    }
+  });
+
+  // Game Preview endpoint (Improvement #7)
+  app.post('/api/projects/:projectId/preview', isAuthenticated, async (req: any, res) => {
+    try {
+      const project = await storage.getProject(req.params.projectId);
+      if (!project || project.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      // Return preview data with placeholder
+      res.json({
+        projectId: project.id,
+        previewUrl: `/preview/${project.id}`,
+        status: 'ready',
+        gameType: project.projectType,
+      });
+    } catch (error) {
+      console.error("Error generating preview:", error);
+      res.status(500).json({ message: "Failed to generate preview" });
+    }
+  });
+
+  // Batch generation endpoint (Improvement #9)
+  app.post('/api/projects/:projectId/batch-generate', isAuthenticated, async (req: any, res) => {
+    try {
+      const project = await storage.getProject(req.params.projectId);
+      if (!project || project.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const prompts = req.body.prompts || [];
+      const results = [];
+
+      for (const prompt of prompts) {
+        const { code, commandType } = await generateRobloxCode({
+          prompt: prompt.trim(),
+          projectType: project.projectType,
+        });
+
+        const command = await storage.createCommand({
+          projectId: project.id,
+          userId: req.user.claims.sub,
+          prompt: prompt.trim(),
+          generatedCode: code,
+          commandType,
+          status: 'completed',
+        });
+
+        results.push({ prompt, commandId: command.id, code });
+      }
+
+      res.status(201).json({ results, totalGenerated: results.length });
+    } catch (error) {
+      console.error("Error batch generating:", error);
+      res.status(500).json({ message: "Failed to batch generate code" });
+    }
+  });
+
   return httpServer;
 }
 
