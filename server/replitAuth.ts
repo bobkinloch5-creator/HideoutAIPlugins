@@ -1,8 +1,9 @@
 import * as client from "openid-client";
 import { Strategy, type VerifyFunction } from "openid-client/passport";
-import DiscordStrategy from "passport-discord";
-
 import passport from "passport";
+
+// @ts-ignore - passport-discord doesn't have type definitions
+import DiscordStrategy from "passport-discord";
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";

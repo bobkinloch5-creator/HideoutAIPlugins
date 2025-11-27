@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { usePluginConnection } from "@/hooks/usePluginConnection";
 import { 
   Send, 
   Copy, 
@@ -15,7 +16,9 @@ import {
   Loader2, 
   Sparkles, 
   Code2,
-  Zap
+  Zap,
+  Wifi,
+  WifiOff
 } from "lucide-react";
 
 interface AIChatProps {
@@ -28,16 +31,33 @@ export function AIChat({ projectId, projectType, onCommandGenerated }: AIChatPro
   const { toast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { isConnected, sendToPlugin } = usePluginConnection(projectId);
   
   const [prompt, setPrompt] = useState("");
   const [messages, setMessages] = useState<Array<{ id: string; role: "user" | "assistant"; content: string; code?: string }>>(
-    [{ id: "1", role: "assistant", content: "Hi! I'm your AI code generator. Describe what you want to build, and I'll generate production-ready Roblox Lua code for you. What would you like to create?" }]
+    [{ id: "1", role: "assistant", content: "Hi! I'm your AI code generator. Describe what you want to build, and I'll generate production-ready Roblox Lua code for you. The plugin is " + (isConnected ? "connected!" : "connecting...") }]
   );
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    const handlePluginCodeGenerated = (event: CustomEvent) => {
+      const { code, commandType, commandId } = event.detail;
+      const assistantMsg = {
+        id: commandId || Math.random().toString(),
+        role: "assistant" as const,
+        content: "I've generated your code and sent it to your plugin! Copy it and paste it into Roblox Studio.",
+        code
+      };
+      setMessages(prev => [...prev, assistantMsg]);
+    };
+
+    window.addEventListener("plugin:codeGenerated", handlePluginCodeGenerated as EventListener);
+    return () => window.removeEventListener("plugin:codeGenerated", handlePluginCodeGenerated as EventListener);
+  }, []);
 
   const generateMutation = useMutation({
     mutationFn: async (promptText: string) => {
@@ -50,10 +70,22 @@ export function AIChat({ projectId, projectType, onCommandGenerated }: AIChatPro
       const assistantMsg = {
         id: Math.random().toString(),
         role: "assistant" as const,
-        content: "I've generated your code! Copy it and paste it into Roblox Studio.",
+        content: isConnected 
+          ? "I've generated your code and sent it to your plugin! Check your Roblox Studio."
+          : "I've generated your code! Copy it and paste it into Roblox Studio.",
         code: data.code
       };
       setMessages(prev => [...prev, assistantMsg]);
+      
+      // Send to plugin if connected
+      if (isConnected && data.code) {
+        sendToPlugin({
+          type: "generate",
+          prompt: data.prompt,
+          projectId
+        });
+      }
+      
       queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId] });
       queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId, "commands"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
@@ -101,19 +133,34 @@ export function AIChat({ projectId, projectType, onCommandGenerated }: AIChatPro
     <Card className="border-2 border-primary/20 overflow-hidden flex flex-col h-full bg-gradient-to-b from-card to-muted/20">
       {/* Header */}
       <CardHeader className="bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 border-b border-primary/20 pb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center animate-pulse">
-            <Sparkles className="w-5 h-5 text-white" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center animate-pulse">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <CardTitle className="flex items-center gap-2 font-black">
+                AI Code Generator
+                <Badge variant="default" className="text-xs font-bold">
+                  <Zap className="w-3 h-3 mr-1" />
+                  Live
+                </Badge>
+              </CardTitle>
+            </div>
           </div>
-          <div>
-            <CardTitle className="flex items-center gap-2 font-black">
-              AI Code Generator
-              <Badge variant="default" className="text-xs font-bold">
-                <Zap className="w-3 h-3 mr-1" />
-                Live
-              </Badge>
-            </CardTitle>
-          </div>
+          <Badge variant={isConnected ? "default" : "secondary"} className="flex items-center gap-1">
+            {isConnected ? (
+              <>
+                <Wifi className="w-3 h-3" />
+                Plugin Connected
+              </>
+            ) : (
+              <>
+                <WifiOff className="w-3 h-3" />
+                Plugin Offline
+              </>
+            )}
+          </Badge>
         </div>
       </CardHeader>
 

@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { generateRobloxCode, classifyPrompt } from "./gemini";
 
 interface PluginClient {
-  ws: WebSocket;
+  ws: WebSocket & { isAlive?: boolean };
   projectId: string;
   userId: string;
   isAlive: boolean;
@@ -15,7 +15,7 @@ const pluginClients = new Map<string, PluginClient>();
 export function setupWebSocket(server: HTTPServer) {
   const wss = new WebSocketServer({ server, path: "/api/plugin/ws" });
 
-  wss.on("connection", (ws: WebSocket, req) => {
+  wss.on("connection", (ws: WebSocket & { isAlive?: boolean }, req) => {
     const params = new URLSearchParams(req.url?.split("?")[1] || "");
     const projectId = params.get("projectId");
     const userId = params.get("userId");
@@ -34,7 +34,7 @@ export function setupWebSocket(server: HTTPServer) {
     // Heartbeat
     ws.isAlive = true;
     ws.on("pong", () => {
-      ws.isAlive = true;
+      if (ws.isAlive !== undefined) ws.isAlive = true;
     });
 
     // Handle messages from plugin
@@ -108,8 +108,8 @@ export function setupWebSocket(server: HTTPServer) {
 
   // Heartbeat interval
   setInterval(() => {
-    wss.clients.forEach((ws: WebSocket & { isAlive: boolean }) => {
-      if (!ws.isAlive) {
+    wss.clients.forEach((ws: WebSocket & { isAlive?: boolean }) => {
+      if (ws.isAlive === false) {
         ws.terminate();
         return;
       }
