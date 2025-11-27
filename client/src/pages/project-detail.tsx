@@ -59,6 +59,10 @@ export default function ProjectDetail() {
   const [prompt, setPrompt] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  const { data: user } = useQuery<{ id: string; email: string; firstName?: string; lastName?: string }>({
+    queryKey: ["/api/auth/user"],
+  });
+
   const { data: project, isLoading: projectLoading } = useQuery<Project>({
     queryKey: ["/api/projects", id],
     enabled: !!id,
@@ -71,10 +75,9 @@ export default function ProjectDetail() {
 
   const generateMutation = useMutation({
     mutationFn: async (promptText: string) => {
-      const response = await apiRequest("POST", `/api/projects/${id}/generate`, {
+      return await apiRequest("POST", `/api/projects/${id}/generate`, {
         prompt: promptText,
-      });
-      return response as Command;
+      }) as unknown as Command;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects", id] });
