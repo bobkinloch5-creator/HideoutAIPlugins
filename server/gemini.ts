@@ -18,6 +18,19 @@ const SYSTEM_TEMPLATES: Record<string, string> = {
   obby: `You are the WORLD'S BEST expert Roblox Lua developer specializing in obey (obstacle course) games.
 Generate PRODUCTION-READY, copy-paste Roblox Lua code for Studio with ZERO errors.
 
+🎯 COMPLETE PLAYABLE GAME REQUIREMENT: Generate code that creates a FULLY PLAYABLE game where players can immediately start playing after pasting. Include asset insertion from Roblox Toolbox.
+
+ROBLOX TOOLBOX INTEGRATION:
+- Use InsertService:LoadAsset() to insert pre-built models from Roblox Toolbox
+- Reference popular asset IDs: trees (3029018133), rocks (2780958629), houses (1202142852), effects (3029018200)
+- Parent cloned assets to Workspace at calculated positions
+- Scale and rotate assets appropriately for game layout
+- Include this code pattern: local InsertService = game:GetService("InsertService")
+  local asset = InsertService:LoadAsset(assetId)
+  local model = asset:GetChildren()[1]
+  model.Parent = workspace
+  model:MoveTo(Vector3.new(x,y,z))
+
 ADVANCED ROBLOX ARCHITECTURE:
 - Use game:GetService() efficiently, cache services in local variables
 - Instance creation MUST include parent in the same line for performance
@@ -42,7 +55,8 @@ OBBY ADVANCED SYSTEMS:
 - Sound effects: Add CheckpointReached, StageFailed, GameComplete sounds
 
 OUTPUT: Full, working ServerScript ready to paste. Include safety guards, error messages, and detailed comments.
-Optimize for performance. Add telemetry logging for debugging.`,
+Optimize for performance. Add telemetry logging for debugging.
+CRITICAL: Include InsertService code to load and position Toolbox assets. Game should be playable immediately.`,
   
   racing: `You are the WORLD'S BEST expert Roblox Lua developer specializing in racing games.
 Generate PRODUCTION-READY, copy-paste Roblox Lua code for Studio with ZERO errors.
@@ -149,6 +163,18 @@ Implement proper telemetry, analytics tracking, error logging systems.
 Code must be maintainable, scalable, and production-hardened.`
 };
 
+// Roblox Toolbox asset IDs - common assets for games
+const TOOLBOX_ASSETS = {
+  trees: [3029018133, 3029018106, 3029018079], // Various tree models
+  rocks: [2780958629, 2780958610], // Rock formations
+  houses: [1202142852, 1202142871], // House models
+  furniture: [2780958609, 2780958620], // Furniture pieces
+  effects: [3029018200, 3029018215], // Particle effects
+  characters: [2780958650, 2780958665], // NPC/character models
+  vehicles: [2780958680, 2780958695], // Vehicle models
+  weapons: [3029018250, 3029018265], // Weapon models
+};
+
 // Asset keyword library for context
 const ASSET_KEYWORDS = [
   "tree", "pine", "rock", "grass", "flower", "house", "shop", "tower", "castle", "bridge",
@@ -207,12 +233,21 @@ Then provide the FULL COMPLETE CODE BLOCK.`;
 
 ${instructionsForExplanation}
 
+🎯 CRITICAL INSTRUCTIONS FOR PLAYABLE GAMES:
+1. Generate code that creates a COMPLETE, IMMEDIATELY PLAYABLE game
+2. Include Roblox Toolbox asset insertion using InsertService:LoadAsset()
+3. Automatically place and configure assets so the game is ready to play after pasting
+4. Use these toolbox asset IDs when relevant: trees (3029018133), rocks (2780958629), houses (1202142852), effects (3029018200)
+5. Make sure game mechanics work out-of-the-box without manual setup
+6. Include proper error handling so assets load even if toolbox is temporarily unavailable
+
 Available asset keywords that can be referenced: ${ASSET_KEYWORDS.join(", ")}
 
 User Request: ${prompt}
 
 Generate clean, well-commented Lua code that can be directly copied into Roblox Studio.
 Include comments explaining the code structure and where to place it (ServerScriptService, StarterPlayerScripts, etc).
+MAKE SURE THE GAME IS FULLY PLAYABLE with assets inserted from Roblox Toolbox.
 Respond with valid JSON in this format: { "code": "-- your lua code here", "commandType": "script|terrain|asset|system" }`;
 
   try {
