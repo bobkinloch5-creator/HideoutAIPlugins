@@ -24,6 +24,8 @@ import PluginSettings from "@/pages/plugin-settings";
 import Downloads from "@/pages/downloads";
 import Onboarding from "@/pages/onboarding";
 import NotFound from "@/pages/not-found";
+import TermsOfService from "@/pages/terms";
+import PrivacyPolicy from "@/pages/privacy";
 
 
 function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
@@ -59,6 +61,8 @@ function Router() {
       <Switch>
         <Route path="/" component={Landing} />
         <Route path="/auth" component={AuthPage} />
+        <Route path="/terms" component={TermsOfService} />
+        <Route path="/privacy" component={PrivacyPolicy} />
         <Route component={Landing} />
       </Switch>
     );
@@ -77,6 +81,8 @@ function Router() {
         <Route path="/downloads" component={Downloads} />
         <Route path="/settings" component={Settings} />
         <Route path="/plugin-settings" component={PluginSettings} />
+        <Route path="/terms" component={TermsOfService} />
+        <Route path="/privacy" component={PrivacyPolicy} />
         <Route component={NotFound} />
       </Switch>
     </AuthenticatedLayout>
