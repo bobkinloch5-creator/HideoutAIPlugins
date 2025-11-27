@@ -75,13 +75,6 @@ export default function Landing() {
     }
   ];
 
-  const stats = [
-    { value: "10K+", label: "Games Created" },
-    { value: "200+", label: "Asset Keywords" },
-    { value: "50+", label: "System Templates" },
-    { value: "99.9%", label: "Uptime" }
-  ];
-
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
@@ -141,7 +134,7 @@ export default function Landing() {
               The ultimate AI-powered game builder for Roblox Studio.
             </p>
             
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <a href="/api/login">
                 <Button size="lg" className="text-lg px-8 py-6 glow-primary" data-testid="button-get-started">
                   Start Building Free
@@ -154,16 +147,6 @@ export default function Landing() {
                   Join Discord
                 </Button>
               </a>
-            </div>
-
-            {/* Stats Bar */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center" data-testid={`stat-${index}`}>
-                  <div className="text-3xl md:text-4xl font-bold text-primary">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
-                </div>
-              ))}
             </div>
           </div>
 
