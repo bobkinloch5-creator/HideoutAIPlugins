@@ -4,9 +4,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom Flashy Cursor with Glow */
+/* Optimized CSS Cursor - No Lag */
 html {
-  cursor: none;
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%236366f1" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2" fill="%236366f1"/></svg>') 12 12, auto;
 }
 
 a,
@@ -16,60 +16,7 @@ button,
 input[type="checkbox"],
 input[type="radio"],
 select {
-  cursor: none;
-}
-
-/* Custom Cursor Styles */
-.custom-cursor {
-  position: fixed;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  pointer-events: none;
-  z-index: 9999;
-  mix-blend-mode: screen;
-  transition: transform 0.2s ease;
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.8), 0 0 40px rgba(139, 92, 246, 0.4);
-}
-
-.custom-cursor-glow {
-  position: fixed;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 9998;
-  transition: transform 0.3s ease;
-  animation: cursor-pulse 2s infinite;
-}
-
-@keyframes cursor-pulse {
-
-  0%,
-  100% {
-    opacity: 0.6;
-    transform: translate(-50%, -50%) scale(1);
-  }
-
-  50% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.2);
-  }
-}
-
-/* Cursor trail effect */
-@keyframes cursor-trail {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  100% {
-    opacity: 0;
-    transform: scale(0.5);
-  }
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="%236366f1" stroke="%236366f1" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>') 12 12, pointer;
 }
 
 /* LIGHT MODE - Hideout Bot Premium Theme */

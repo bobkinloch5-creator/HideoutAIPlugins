@@ -9,7 +9,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { SiRoblox, SiDiscord } from "react-icons/si";
+import { SiDiscord } from "react-icons/si";
 import { supabase } from "@/lib/supabase";
 import { queryClient } from "@/lib/queryClient";
 
@@ -17,8 +17,10 @@ export default function AuthPage() {
     const { user } = useAuth();
     const [, setLocation] = useLocation();
 
+    // Force redirect if user is already logged in
     useEffect(() => {
         if (user) {
+            console.log("User detected, redirecting to dashboard...");
             setLocation("/dashboard");
         }
     }, [user, setLocation]);
@@ -35,6 +37,7 @@ export default function AuthPage() {
         }
     };
 
+    // Listen for auth state changes
     useEffect(() => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session: any) => {
             if (event === 'SIGNED_IN' && session?.user) {
@@ -51,8 +54,8 @@ export default function AuthPage() {
                     });
 
                     if (res.ok) {
-                        const user = await res.json();
-                        queryClient.setQueryData(["/api/auth/user"], user);
+                        const userData = await res.json();
+                        queryClient.setQueryData(["/api/auth/user"], userData);
                         setLocation("/dashboard");
                     }
                 } catch (err) {
@@ -65,59 +68,52 @@ export default function AuthPage() {
     }, [setLocation]);
 
     return (
-        <div className="min-h-screen grid lg:grid-cols-2 bg-background">
-            <div className="flex items-center justify-center p-8">
-                <Card className="w-full max-w-md">
-                    <CardHeader className="space-y-1">
-                        <div className="flex items-center gap-2 mb-4">
-                            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                                <SiRoblox className="w-6 h-6 text-primary" />
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+            <Card className="w-full max-w-md border-border/50 shadow-xl bg-card/50 backdrop-blur-sm">
+                <CardHeader className="text-center space-y-2">
+                    <div className="mx-auto w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 ring-1 ring-primary/20">
+                        <SiDiscord className="w-6 h-6 text-primary" />
+                    </div>
+                    <CardTitle className="text-2xl font-bold tracking-tight">Welcome Back</CardTitle>
+                    <CardDescription className="text-base">
+                        Sign in to access your dashboard
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {user ? (
+                        <div className="space-y-4">
+                            <div className="p-4 bg-primary/5 rounded-lg border border-primary/10 text-center">
+                                <p className="text-sm text-muted-foreground mb-2">Logged in as</p>
+                                <p className="font-medium flex items-center justify-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                    {user.username || user.email}
+                                </p>
                             </div>
-                            <h1 className="text-2xl font-bold">Hideout Bot</h1>
+                            <Button
+                                className="w-full h-11 text-base font-medium shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
+                                onClick={() => setLocation("/dashboard")}
+                            >
+                                Go to Dashboard
+                            </Button>
                         </div>
-                        <CardTitle className="text-2xl">Welcome</CardTitle>
-                        <CardDescription>
-                            Sign in with Discord to continue building
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
+                    ) : (
                         <Button
-                            variant="default"
-                            size="lg"
-                            className="w-full"
+                            className="w-full h-11 text-base font-medium shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
                             onClick={onDiscordLogin}
                         >
                             <SiDiscord className="mr-2 h-5 w-5" />
                             Continue with Discord
                         </Button>
+                    )}
 
-                        <Button
-                            variant="outline"
-                            size="lg"
-                            className="w-full"
-                            disabled
-                        >
-                            <SiRoblox className="mr-2 h-5 w-5" />
-                            Roblox Login (Coming Soon)
-                        </Button>
-
-                        <p className="text-xs text-center text-muted-foreground">
-                            By signing in, you agree to our Terms of Service and Privacy Policy
-                        </p>
-                    </CardContent>
-                </Card>
-            </div>
-            <div className="hidden lg:flex flex-col justify-center p-12 bg-muted text-muted-foreground">
-                <div className="max-w-md mx-auto space-y-4">
-                    <h2 className="text-3xl font-bold text-foreground">
-                        Build Roblox Games with AI
-                    </h2>
-                    <p className="text-lg">
-                        Generate assets, scripts, and entire game systems using natural language prompts.
-                        The fastest way to build on Roblox.
-                    </p>
-                </div>
-            </div>
+                    <div className="text-center text-xs text-muted-foreground pt-4">
+                        By continuing, you agree to our{" "}
+                        <a href="/terms" className="underline hover:text-primary transition-colors">Terms</a>
+                        {" "}and{" "}
+                        <a href="/privacy" className="underline hover:text-primary transition-colors">Privacy Policy</a>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     );
 }
