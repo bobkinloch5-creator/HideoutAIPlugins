@@ -156,7 +156,7 @@ export async function registerRoutes(
     }
   });
 
-  // Generate code with AI
+  // Generate code with AI using Gemini
   app.post('/api/projects/:id/generate', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -176,25 +176,7 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Prompt is required" });
       }
       
-      // Check if OpenAI API key is available
-      if (!process.env.OPENAI_API_KEY) {
-        // Return a placeholder response for demo purposes
-        const commandType = classifyPrompt(prompt);
-        const demoCode = generateDemoCode(prompt, project.projectType, commandType);
-        
-        const command = await storage.createCommand({
-          projectId: project.id,
-          userId,
-          prompt: prompt.trim(),
-          generatedCode: demoCode,
-          commandType,
-          status: 'pending',
-        });
-        
-        return res.status(201).json(command);
-      }
-      
-      // Generate code using OpenAI
+      // Generate code using Gemini
       const { code, commandType } = await generateRobloxCode({
         prompt: prompt.trim(),
         projectType: project.projectType,
@@ -206,13 +188,68 @@ export async function registerRoutes(
         prompt: prompt.trim(),
         generatedCode: code,
         commandType,
-        status: 'pending',
+        status: 'completed',
       });
       
       res.status(201).json(command);
     } catch (error) {
       console.error("Error generating code:", error);
+      res.status(500).json({ message: "Failed to generate code. Please try again." });
+    }
+  });
+
+  // Plugin command endpoint (from plugin to generate code)
+  app.post('/api/commands', async (req, res) => {
+    try {
+      const { prompt, projectId } = req.body;
+      
+      if (!projectId || !prompt) {
+        return res.status(400).json({ message: "Project ID and prompt are required" });
+      }
+      
+      const project = await storage.getProject(projectId);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      // Generate code using Gemini
+      const { code, commandType } = await generateRobloxCode({
+        prompt: prompt.trim(),
+        projectType: project.projectType,
+      });
+      
+      const command = await storage.createCommand({
+        projectId: projectId,
+        userId: project.userId,
+        prompt: prompt.trim(),
+        generatedCode: code,
+        commandType,
+        status: 'completed',
+      });
+      
+      res.status(201).json({ 
+        generatedCode: code,
+        commandType: commandType,
+        commandId: command.id
+      });
+    } catch (error) {
+      console.error("Error generating code:", error);
       res.status(500).json({ message: "Failed to generate code" });
+    }
+  });
+
+  // Plugin download endpoint
+  app.get('/api/plugin/download', (req, res) => {
+    try {
+      const pluginPath = path.join(__dirname, '../plugin/hideout-bot-plugin.lua');
+      res.download(pluginPath, 'hideout-bot-plugin.lua', (err) => {
+        if (err) {
+          console.error("Error downloading plugin:", err);
+        }
+      });
+    } catch (error) {
+      console.error("Error downloading plugin:", error);
+      res.status(500).json({ message: "Failed to download plugin" });
     }
   });
 
