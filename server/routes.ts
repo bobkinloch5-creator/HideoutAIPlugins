@@ -2,9 +2,11 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { generateRobloxCode, classifyPrompt } from "./openai";
+import { generateRobloxCode, classifyPrompt } from "./gemini";
 import { insertProjectSchema, insertCommandSchema } from "@shared/schema";
 import { z } from "zod";
+import * as fs from "fs";
+import * as path from "path";
 
 export async function registerRoutes(
   httpServer: Server,
