@@ -10,6 +10,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Footer } from "@/components/footer";
+import { CustomCursor } from "@/components/custom-cursor";
 
 import Landing from "@/pages/landing";
 import AuthPage from "@/pages/auth-page";
@@ -111,6 +112,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark" storageKey="hideout-theme">
         <TooltipProvider>
+          <CustomCursor />
           <Toaster />
           <Router />
         </TooltipProvider>

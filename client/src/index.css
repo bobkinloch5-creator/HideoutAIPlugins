@@ -6,11 +6,57 @@
 
 /* Custom Flashy Cursor with Glow */
 html {
-  cursor: url('data:image/svg+xml;utf8,\u003csvg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"\u003e\u003cdefs\u003e\u003cfilter id="glow"\u003e\u003cfeGaussianBlur stdDeviation="2" result="coloredBlur"/\u003e\u003cfeMerge\u003e\u003cfeMergeNode in="coloredBlur"/\u003e\u003cfeMergeNode in="SourceGraphic"/\u003e\u003c/feMerge\u003e\u003c/filter\u003e\u003c/defs\u003e\u003ccircle cx="16" cy="16" r="10" fill="none" stroke="%236366f1" stroke-width="2" opacity="0.3"/\u003e\u003ccircle cx="16" cy="16" r="6" fill="%236366f1" opacity="0.6" filter="url(%23glow)"/\u003e\u003ccircle cx="16" cy="16" r="3" fill="%23ffffff"/\u003e\u003c/svg\u003e') 16 16, auto;
+  cursor: none;
 }
 
-a, button, [role="button"], [class*="cursor-pointer"], input[type="checkbox"], input[type="radio"], select {
-  cursor: url('data:image/svg+xml;utf8,\u003csvg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"\u003e\u003cdefs\u003e\u003cfilter id="glow"\u003e\u003cfeGaussianBlur stdDeviation="3" result="coloredBlur"/\u003e\u003cfeMerge\u003e\u003cfeMergeNode in="coloredBlur"/\u003e\u003cfeMergeNode in="SourceGraphic"/\u003e\u003c/feMerge\u003e\u003c/filter\u003e\u003c/defs\u003e\u003ccircle cx="16" cy="16" r="12" fill="none" stroke="%2310b981" stroke-width="2" opacity="0.4"/\u003e\u003ccircle cx="16" cy="16" r="8" fill="%2310b981" opacity="0.7" filter="url(%23glow)"/\u003e\u003ccircle cx="16" cy="16" r="4" fill="%23ffffff"/\u003e\u003cpath d="M16 8 L20 12 L16 16 L12 12 Z" fill="%23ffffff" opacity="0.8"/\u003e\u003c/svg\u003e') 16 16, pointer;
+a,
+button,
+[role="button"],
+[class*="cursor-pointer"],
+input[type="checkbox"],
+input[type="radio"],
+select {
+  cursor: none;
+}
+
+/* Custom Cursor Styles */
+.custom-cursor {
+  position: fixed;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: screen;
+  transition: transform 0.2s ease;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.8), 0 0 40px rgba(139, 92, 246, 0.4);
+}
+
+.custom-cursor-glow {
+  position: fixed;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 9998;
+  transition: transform 0.3s ease;
+  animation: cursor-pulse 2s infinite;
+}
+
+@keyframes cursor-pulse {
+
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
 }
 
 /* Cursor trail effect */
@@ -19,6 +65,7 @@ a, button, [role="button"], [class*="cursor-pointer"], input[type="checkbox"], i
     opacity: 1;
     transform: scale(1);
   }
+
   100% {
     opacity: 0;
     transform: scale(0.5);
@@ -27,11 +74,11 @@ a, button, [role="button"], [class*="cursor-pointer"], input[type="checkbox"], i
 
 /* LIGHT MODE - Hideout Bot Premium Theme */
 :root {
-  --button-outline: rgba(0,0,0, .10);
-  --badge-outline: rgba(0,0,0, .05);
+  --button-outline: rgba(0, 0, 0, .10);
+  --badge-outline: rgba(0, 0, 0, .05);
   --opaque-button-border-intensity: -8;
-  --elevate-1: rgba(0,0,0, .03);
-  --elevate-2: rgba(0,0,0, .08);
+  --elevate-1: rgba(0, 0, 0, .03);
+  --elevate-2: rgba(0, 0, 0, .08);
   --background: 240 10% 96%;
   --foreground: 240 10% 9%;
   --border: 240 6% 85%;
@@ -110,11 +157,11 @@ a, button, [role="button"], [class*="cursor-pointer"], input[type="checkbox"], i
 
 /* DARK MODE - Premium Dark Theme matching Plugin aesthetic */
 .dark {
-  --button-outline: rgba(255,255,255, .10);
-  --badge-outline: rgba(255,255,255, .05);
+  --button-outline: rgba(255, 255, 255, .10);
+  --badge-outline: rgba(255, 255, 255, .05);
   --opaque-button-border-intensity: 9;
-  --elevate-1: rgba(255,255,255, .04);
-  --elevate-2: rgba(255,255,255, .09);
+  --elevate-1: rgba(255, 255, 255, .04);
+  --elevate-2: rgba(255, 255, 255, .09);
   --background: 240 10% 6%;
   --foreground: 0 0% 98%;
   --border: 240 6% 15%;
@@ -213,6 +260,7 @@ a, button, [role="button"], [class*="cursor-pointer"], input[type="checkbox"], i
 }
 
 @layer utilities {
+
   /* Hide ugly search cancel button in Chrome until we can style it properly */
   input[type="search"]::-webkit-search-cancel-button {
     @apply hidden;
@@ -226,6 +274,7 @@ a, button, [role="button"], [class*="cursor-pointer"], input[type="checkbox"], i
   }
 
   .no-default-hover-elevate {}
+
   .no-default-active-elevate {}
 
   .toggle-elevate::before,
@@ -316,7 +365,7 @@ a, button, [role="button"], [class*="cursor-pointer"], input[type="checkbox"], i
   .animated-border {
     position: relative;
     background: linear-gradient(var(--card), var(--card)) padding-box,
-                linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary))) border-box;
+      linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary))) border-box;
     border: 1px solid transparent;
     border-radius: var(--radius);
   }
@@ -326,6 +375,7 @@ a, button, [role="button"], [class*="cursor-pointer"], input[type="checkbox"], i
     0% {
       transform: translateX(-100%);
     }
+
     100% {
       transform: translateX(100%);
     }
@@ -341,20 +391,21 @@ a, button, [role="button"], [class*="cursor-pointer"], input[type="checkbox"], i
     position: absolute;
     inset: 0;
     transform: translateX(-100%);
-    background: linear-gradient(
-      90deg,
-      transparent,
-      hsl(var(--primary) / 0.1),
-      transparent
-    );
+    background: linear-gradient(90deg,
+        transparent,
+        hsl(var(--primary) / 0.1),
+        transparent);
     animation: shimmer 2s infinite;
   }
 
   /* Pulse animation for status indicators */
   @keyframes pulse-glow {
-    0%, 100% {
+
+    0%,
+    100% {
       opacity: 1;
     }
+
     50% {
       opacity: 0.5;
     }
