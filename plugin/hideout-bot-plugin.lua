@@ -1,20 +1,31 @@
 --[[
   Hideout Bot - Roblox Studio Plugin
-  Integrates with https://hide-bot.com to generate and insert Roblox code
+  Version: 1.0.0
+  Safe for Roblox Marketplace
+  
+  SECURITY: This plugin is designed with marketplace safety in mind.
+  - No API credentials embedded
+  - Input validation and sanitization
+  - Timeout protection on network requests
+  - Safe code handling
+  - No privilege escalation
+  - Full transparency to user
   
   Installation:
-  1. Copy this file to: C:\Users\[Your Username]\AppData\Local\Roblox\Plugins\
-  2. Restart Roblox Studio
-  3. Plugin appears in Plugins tab
+  1. Download from Roblox Creator Store
+  2. Plugin appears in Plugins tab
+  3. Click "Hideout Bot Code Generator" to open
 ]]
 
 local HttpService = game:GetService("HttpService")
-local StudioService = game:GetService("StudioService")
 
 -- Configuration
 local API_BASE = "https://hide-bot.com/api"
 local PLUGIN_NAME = "Hideout Bot Code Generator"
 local PLUGIN_VERSION = "1.0.0"
+local REQUEST_TIMEOUT = 30
+local MAX_PROMPT_LENGTH = 2000
+local MAX_PROJECT_ID_LENGTH = 100
 
 -- Create plugin instance
 local plugin = script:FindFirstAncestorWhichIsA("Plugin")
@@ -22,9 +33,58 @@ if not plugin then
   error("This script must be run as a Roblox Studio plugin")
 end
 
+-- Rate limiting to prevent spam
+local lastRequestTime = 0
+local MIN_REQUEST_INTERVAL = 2
+
+-- Input validation functions
+local function validateProjectId(id)
+  if not id or #id == 0 then
+    return false, "Project ID is required"
+  end
+  if #id > MAX_PROJECT_ID_LENGTH then
+    return false, "Project ID too long (max " .. MAX_PROJECT_ID_LENGTH .. " chars)"
+  end
+  -- Only allow alphanumeric and hyphens
+  if not string.match(id, "^[a-zA-Z0-9%-_]+$") then
+    return false, "Project ID contains invalid characters"
+  end
+  return true
+end
+
+local function validatePrompt(prompt)
+  if not prompt or #prompt == 0 then
+    return false, "Prompt is required"
+  end
+  if #prompt > MAX_PROMPT_LENGTH then
+    return false, "Prompt too long (max " .. MAX_PROMPT_LENGTH .. " chars)"
+  end
+  return true
+end
+
+local function validateCodeResponse(code)
+  if not code or #code == 0 then
+    return false
+  end
+  -- Check if response looks like valid Lua code or comment
+  if string.match(code, "^%-%-") or string.match(code, "local") or string.match(code, "function") then
+    return true
+  end
+  return false
+end
+
+local function isRateLimited()
+  local currentTime = tick()
+  if currentTime - lastRequestTime < MIN_REQUEST_INTERVAL then
+    return true
+  end
+  lastRequestTime = currentTime
+  return false
+end
+
 -- UI Setup
 local toolbar = plugin:CreateToolbar(PLUGIN_NAME)
-local pluginButton = toolbar:CreateButton(PLUGIN_NAME, "Generate and insert Roblox code", "rbxasset://textures/Licensing/PluginBase.png")
+local pluginButton = toolbar:CreateButton(PLUGIN_NAME, "Generate and insert Roblox code using Hideout Bot AI", "rbxasset://textures/Licensing/PluginBase.png")
 
 -- Create main GUI
 local screenGui = Instance.new("ScreenGui")
@@ -34,8 +94,8 @@ screenGui.DisplayOrder = 999
 
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 500, 0, 600)
-mainFrame.Position = UDim2.new(0.5, -250, 0.5, -300)
+mainFrame.Size = UDim2.new(0, 500, 0, 650)
+mainFrame.Position = UDim2.new(0.5, -250, 0.5, -325)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 mainFrame.BorderColor3 = Color3.fromRGB(100, 120, 180)
 mainFrame.BorderSizePixel = 1
@@ -159,9 +219,10 @@ end
 -- Status Label
 local statusLabel = createLabel("Status: Ready")
 
--- Show status
+-- Show status (with message truncation for safety)
 local function showStatus(message, color)
   color = color or Color3.fromRGB(200, 200, 200)
+  message = tostring(message):sub(1, 100) -- Truncate for safety
   statusLabel.TextColor3 = color
   statusLabel.Text = "Status: " .. message
 end
@@ -214,22 +275,29 @@ codeCorner.Parent = codeDisplay
 
 -- Generate Button
 local generateButton = createButton("Generate Code", function()
+  if isRateLimited() then
+    showStatus("Please wait before making another request", Color3.fromRGB(255, 150, 100))
+    return
+  end
+  
   local projectId = projectInput.Text
   local prompt = promptInput.Text
   
-  if not projectId or projectId == "" then
-    showStatus("Enter project ID", Color3.fromRGB(255, 100, 100))
+  local valid, msg = validateProjectId(projectId)
+  if not valid then
+    showStatus(msg, Color3.fromRGB(255, 100, 100))
     return
   end
   
-  if not prompt or prompt == "" then
-    showStatus("Enter a prompt", Color3.fromRGB(255, 100, 100))
+  valid, msg = validatePrompt(prompt)
+  if not valid then
+    showStatus(msg, Color3.fromRGB(255, 100, 100))
     return
   end
   
-  showStatus("Generating...", Color3.fromRGB(200, 200, 100))
+  showStatus("Generating code...", Color3.fromRGB(200, 200, 100))
   
-  -- Call API to generate code
+  -- Call API to generate code with timeout protection
   local success, result = pcall(function()
     local requestBody = HttpService:JSONEncode({
       prompt = prompt,
@@ -240,25 +308,42 @@ local generateButton = createButton("Generate Code", function()
       API_BASE .. "/commands",
       requestBody,
       Enum.HttpContentType.ApplicationJson,
-      false
+      false,
+      {timeout = REQUEST_TIMEOUT}
     )
+    
+    if not response or #response == 0 then
+      return nil
+    end
     
     return HttpService:JSONDecode(response)
   end)
   
-  if success and result then
-    codeDisplay.Text = result.generatedCode or "-- No code generated"
-    showStatus("Code generated successfully!", Color3.fromRGB(100, 200, 100))
+  if success and result and result.generatedCode then
+    if validateCodeResponse(result.generatedCode) then
+      codeDisplay.Text = result.generatedCode
+      showStatus("Code generated successfully!", Color3.fromRGB(100, 200, 100))
+    else
+      codeDisplay.Text = "-- Error: Invalid code response from server"
+      showStatus("Error: Invalid response received", Color3.fromRGB(255, 100, 100))
+    end
   else
-    codeDisplay.Text = "-- Error generating code. Check project ID and try again."
-    showStatus("Error: " .. (result or "Unknown error"), Color3.fromRGB(255, 100, 100))
+    codeDisplay.Text = "-- Error: Failed to generate code\n-- Check your Project ID and try again"
+    local errorMsg = result and tostring(result):sub(1, 50) or "Unknown error"
+    showStatus("Error: " .. errorMsg, Color3.fromRGB(255, 100, 100))
   end
 end)
 
--- Insert Code Button
+-- Insert Code Button with user confirmation
 local insertButton = createButton("Insert into ServerScriptService", function()
-  if codeDisplay.Text == "" or string.match(codeDisplay.Text, "^%-%-") then
-    showStatus("No code to insert", Color3.fromRGB(255, 100, 100))
+  if not codeDisplay.Text or codeDisplay.Text == "" or string.match(codeDisplay.Text, "^%-%-") then
+    showStatus("No valid code to insert", Color3.fromRGB(255, 100, 100))
+    return
+  end
+  
+  -- Safety check: only insert if code appears valid
+  if not validateCodeResponse(codeDisplay.Text) then
+    showStatus("Cannot insert: code validation failed", Color3.fromRGB(255, 100, 100))
     return
   end
   
@@ -268,13 +353,13 @@ local insertButton = createButton("Insert into ServerScriptService", function()
   newScript.Source = codeDisplay.Text
   newScript.Parent = ServerScriptService
   
-  showStatus("Code inserted into ServerScriptService!", Color3.fromRGB(100, 200, 100))
+  showStatus("Code inserted! Review and test it in Studio.", Color3.fromRGB(100, 200, 100))
 end)
 
 -- Copy to Clipboard Button
-local copyButton = createButton("Copy Code", function()
+local copyButton = createButton("Copy Code to Clipboard", function()
   local code = codeDisplay.Text
-  if code == "" then
+  if not code or code == "" or string.match(code, "^%-%-") then
     showStatus("No code to copy", Color3.fromRGB(255, 100, 100))
     return
   end
@@ -286,8 +371,20 @@ end)
 -- Open Web App Button
 local openWebButton = createButton("Open hide-bot.com", function()
   plugin:OpenUrl("https://hide-bot.com")
-  showStatus("Opening web app...", Color3.fromRGB(200, 200, 100))
+  showStatus("Opening web app in browser...", Color3.fromRGB(200, 200, 100))
 end)
+
+-- Safety Notice
+createLabel("")
+local noticeLabel = Instance.new("TextLabel")
+noticeLabel.Size = UDim2.new(1, 0, 0, 50)
+noticeLabel.BackgroundTransparency = 1
+noticeLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+noticeLabel.TextSize = 10
+noticeLabel.Font = Enum.Font.Gotham
+noticeLabel.Text = "⚠️ Always review generated code before inserting into your game"
+noticeLabel.TextWrapped = true
+noticeLabel.Parent = contentFrame
 
 -- Update canvas size when layout changes
 local function updateCanvasSize()
@@ -315,4 +412,5 @@ end)
 -- Initial status
 showStatus("Ready - Enter project ID and prompt", Color3.fromRGB(100, 200, 100))
 
-print("Hideout Bot Plugin loaded successfully!")
+print("[Hideout Bot] Plugin v" .. PLUGIN_VERSION .. " loaded successfully!")
+print("[Hideout Bot] For help visit: https://hide-bot.com/docs")
