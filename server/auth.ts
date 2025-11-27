@@ -90,7 +90,13 @@ export function setupAuth(app: Express) {
                     console.error("Session login error:", err);
                     return res.status(500).json({ message: "Login failed" });
                 }
-                res.json(user);
+                req.session.save((err) => {
+                    if (err) {
+                        console.error("Session save error:", err);
+                        return res.status(500).json({ message: "Session save failed" });
+                    }
+                    res.json(user);
+                });
             });
         } catch (error) {
             console.error("External login error:", error);

@@ -35,8 +35,9 @@ export async function registerRoutes(
   app.get('/api/auth/user', async (req: any, res) => {
     try {
       // Check if user is authenticated
+      // Check if user is authenticated
       if (!req.isAuthenticated()) {
-        return res.status(401).json({ message: "Unauthorized" });
+        return res.json(null);
       }
 
       const userId = req.user.claims?.sub || req.user.id;
