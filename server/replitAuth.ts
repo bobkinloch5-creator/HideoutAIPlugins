@@ -1,5 +1,6 @@
 import * as client from "openid-client";
 import { Strategy, type VerifyFunction } from "openid-client/passport";
+import DiscordStrategy from "passport-discord";
 
 import passport from "passport";
 import session from "express-session";
@@ -128,6 +129,54 @@ export async function setupAuth(app: Express) {
       );
     });
   });
+
+  // Discord OAuth Strategy
+  if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
+    passport.use(
+      new DiscordStrategy(
+        {
+          clientID: process.env.DISCORD_CLIENT_ID,
+          clientSecret: process.env.DISCORD_CLIENT_SECRET,
+          callbackURL: "/api/discord/callback",
+          scope: ["identify", "email"],
+        },
+        async (accessToken: string, refreshToken: string, profile: any, done: any) => {
+          try {
+            await storage.upsertUser({
+              id: `discord_${profile.id}`,
+              email: profile.email || `${profile.username}@discord.local`,
+              firstName: profile.username,
+              lastName: "",
+              profileImageUrl: profile.avatar ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png` : null,
+            });
+            return done(null, {
+              id: `discord_${profile.id}`,
+              email: profile.email,
+              username: profile.username,
+              avatar: profile.avatar,
+            });
+          } catch (error) {
+            return done(error);
+          }
+        }
+      )
+    );
+
+    app.get(
+      "/api/discord/login",
+      passport.authenticate("discord", {
+        scope: ["identify", "email"],
+      })
+    );
+
+    app.get(
+      "/api/discord/callback",
+      passport.authenticate("discord", {
+        successRedirect: "/",
+        failureRedirect: "/",
+      })
+    );
+  }
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {

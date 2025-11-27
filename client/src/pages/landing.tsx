@@ -113,11 +113,19 @@ export default function Landing() {
             </div>
             <div className="flex items-center gap-3">
               <ThemeToggle />
-              <a href="/api/login">
-                <Button data-testid="button-login">
-                  Sign In
-                </Button>
-              </a>
+              <div className="flex gap-2">
+                <a href="/api/discord/login">
+                  <Button variant="outline" size="sm" data-testid="button-discord-login">
+                    <SiDiscord className="w-4 h-4 mr-2" />
+                    Discord
+                  </Button>
+                </a>
+                <a href="/api/login">
+                  <Button data-testid="button-login">
+                    Sign In
+                  </Button>
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -157,14 +165,14 @@ export default function Landing() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
               <a href="/api/login">
                 <Button size="lg" className="text-lg px-8 py-6 glow-primary" data-testid="button-get-started">
-                  Start Building Free
+                  Sign In with Replit
                   <Flame className="w-5 h-5 ml-2" />
                 </Button>
               </a>
-              <a href="https://discord.gg/rZbtJJ8XYV" target="_blank" rel="noopener noreferrer">
-                <Button size="lg" variant="outline" className="text-lg px-8 py-6" data-testid="button-watch-demo">
+              <a href="/api/discord/login">
+                <Button size="lg" variant="outline" className="text-lg px-8 py-6" data-testid="button-discord-signup">
                   <SiDiscord className="w-5 h-5 mr-2" />
-                  Join Community
+                  Sign In with Discord
                 </Button>
               </a>
             </div>
