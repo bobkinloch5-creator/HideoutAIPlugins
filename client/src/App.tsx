@@ -112,7 +112,6 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark" storageKey="hideout-theme">
         <TooltipProvider>
-          <CustomCursor />
           <Toaster />
           <Router />
         </TooltipProvider>

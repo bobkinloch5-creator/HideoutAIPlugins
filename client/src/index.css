@@ -4,9 +4,19 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Default cursor hidden handled by JS component */
+/* Cool Basic Cursor */
 html {
-  /* cursor: none; set by JS */
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="%236366f1" stroke="white" stroke-width="2"><path d="M5.5 3.21l10.8 15.6-5.6-.6-2.8 5.2-2.6-1.5 2.8-5.2-6.2-2.6z"/></svg>') 2 2, auto;
+}
+
+a,
+button,
+[role="button"],
+[class*="cursor-pointer"],
+input[type="checkbox"],
+input[type="radio"],
+select {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="%2310b981" stroke="white" stroke-width="2"><path d="M6 3l11 11-4.5.5 3.5 6-2.5 1.5-3.5-6-5 3z"/></svg>') 2 2, pointer;
 }
 
 /* LIGHT MODE - Hideout Bot Premium Theme */
