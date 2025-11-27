@@ -33,6 +33,7 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
     "--sidebar-width": "16rem",
     "--sidebar-width-icon": "3rem",
   };
+  const { user } = useAuth();
 
   return (
     <SidebarProvider style={sidebarStyle as React.CSSProperties}>
@@ -41,7 +42,19 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
         <SidebarInset className="flex-1">
           <header className="flex items-center justify-between gap-4 border-b px-4 py-3 sticky top-0 bg-background/95 backdrop-blur z-10">
             <SidebarTrigger data-testid="button-sidebar-toggle" />
-            <ThemeToggle />
+            <div className="flex items-center gap-3">
+              {user && (
+                <div className="flex items-center gap-2">
+                  <img
+                    src={user.avatarUrl || user.profileImageUrl || `https://ui-avatars.com/api/?name=${user.username || 'User'}&background=random`}
+                    alt={user.username || 'User'}
+                    className="w-8 h-8 rounded-full ring-2 ring-primary/20"
+                  />
+                  <span className="text-sm font-medium hidden sm:inline">{user.username || user.email}</span>
+                </div>
+              )}
+              <ThemeToggle />
+            </div>
           </header>
           <main className="flex-1 p-6">
             {children}

@@ -53,7 +53,7 @@ export default function AuthPage() {
                     if (res.ok) {
                         const user = await res.json();
                         queryClient.setQueryData(["/api/auth/user"], user);
-                        setLocation("/");
+                        setLocation("/dashboard");
                     }
                 } catch (err) {
                     console.error("Backend sync failed:", err);
