@@ -226,7 +226,7 @@ export default function Landing() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {steps.map((step, index) => (
               <div key={index} className="relative" data-testid={`step-${index}`}>
-                <div className="text-6xl font-bold text-primary/10 mb-4">{step.number}</div>
+                <div className="text-6xl font-bold text-white dark:text-white mb-4">{step.number}</div>
                 <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
                 <p className="text-muted-foreground">{step.description}</p>
                 {index < steps.length - 1 && (
