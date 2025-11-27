@@ -1,44 +1,26 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import ws from 'ws';
-import dotenv from 'dotenv';
 
-// Load env vars
-dotenv.config();
+import pg from 'pg';
+import "dotenv/config";
 
-neonConfig.webSocketConstructor = ws;
+const { Pool } = pg;
 
-async function testConnection() {
-    console.log("Testing database connection...");
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+});
 
-    if (!process.env.DATABASE_URL) {
-        console.error("❌ DATABASE_URL is missing in .env file");
-        process.exit(1);
-    }
-
-    // Mask password for logging
-    const maskedUrl = process.env.DATABASE_URL.replace(/:[^:@]+@/, ':****@');
-    console.log(`URL: ${maskedUrl}`);
-
-    const pool = new Pool({
-        connectionString: process.env.DATABASE_URL,
-        ssl: true
-    });
-
+async function test() {
     try {
         const client = await pool.connect();
-        console.log("✅ Successfully connected to the database!");
-
-        const res = await client.query('SELECT NOW() as time');
-        console.log(`✅ Query successful! Server time: ${res.rows[0].time}`);
-
+        console.log("Successfully connected to database!");
+        const res = await client.query('SELECT NOW()');
+        console.log("Current time from DB:", res.rows[0]);
         client.release();
-        await pool.end();
         process.exit(0);
     } catch (err) {
-        console.error("❌ Database connection failed:");
-        console.error(err);
+        console.error("Connection failed:", err);
         process.exit(1);
     }
 }
 
-testConnection();
+test();

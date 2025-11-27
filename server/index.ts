@@ -66,11 +66,16 @@ export { app };
 // Export a promise that resolves when the server is ready
 let setupPromise: Promise<void> | null = null;
 
+import { runMigrations } from "./db";
+
+// ...
+
 export function setupServer() {
   if (setupPromise) return setupPromise;
 
   setupPromise = (async () => {
     setupWebSocket(httpServer);
+    await runMigrations();
     await registerRoutes(httpServer, app);
 
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

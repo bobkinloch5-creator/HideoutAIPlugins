@@ -14,3 +14,24 @@ export const pool = new Pool({
 });
 
 export const db = drizzle(pool, { schema });
+
+import { migrate } from "drizzle-orm/node-postgres/migrator";
+import path from "path";
+import fs from "fs";
+
+export async function runMigrations() {
+  const migrationsFolder = path.join(process.cwd(), "migrations");
+  console.log(`Running migrations from: ${migrationsFolder}`);
+
+  if (!fs.existsSync(migrationsFolder)) {
+    console.warn("Migrations folder not found, skipping migrations.");
+    return;
+  }
+
+  try {
+    await migrate(db, { migrationsFolder });
+    console.log("Migrations completed successfully.");
+  } catch (error) {
+    console.error("Migration failed:", error);
+  }
+}

@@ -12,6 +12,22 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // Debug endpoint for database connection
+  app.get('/api/test-db', async (_req, res) => {
+    try {
+      const { pool } = await import('./db');
+      // Parse host from connection string for debugging (safe to expose host usually, but let's be careful)
+      const dbUrl = process.env.DATABASE_URL || '';
+      const host = dbUrl.split('@')[1]?.split(':')[0] || 'unknown';
+
+      const result = await pool.query('SELECT NOW()');
+      res.json({ status: 'ok', time: result.rows[0], host });
+    } catch (error: any) {
+      console.error('Database connection test failed:', error);
+      res.status(500).json({ status: 'error', message: error.message });
+    }
+  });
+
   // Auth middleware
   await setupAuth(app);
 

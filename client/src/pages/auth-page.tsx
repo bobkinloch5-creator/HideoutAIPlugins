@@ -1,9 +1,6 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import {
     Card,
     CardContent,
@@ -12,28 +9,12 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SiRoblox, SiDiscord } from "react-icons/si";
 import { supabase } from "@/lib/supabase";
 import { queryClient } from "@/lib/queryClient";
 
-const authSchema = z.object({
-    username: z.string().min(3, "Username must be at least 3 characters").optional(),
-    password: z.string().min(6, "Password must be at least 6 characters"),
-    email: z.string().email("Invalid email address").optional(),
-});
-
 export default function AuthPage() {
-    const { user, loginMutation, registerMutation } = useAuth();
+    const { user } = useAuth();
     const [, setLocation] = useLocation();
 
     useEffect(() => {
@@ -41,46 +22,6 @@ export default function AuthPage() {
             setLocation("/");
         }
     }, [user, setLocation]);
-
-    const loginForm = useForm<z.infer<typeof authSchema>>({
-        resolver: zodResolver(authSchema),
-        defaultValues: {
-            username: "",
-            password: "",
-        },
-    });
-
-    const registerForm = useForm<z.infer<typeof authSchema>>({
-        resolver: zodResolver(authSchema),
-        defaultValues: {
-            password: "",
-            email: "",
-        },
-    });
-
-    const onLogin = (data: z.infer<typeof authSchema>) => {
-        loginMutation.mutate(data, {
-            onSuccess: () => setLocation("/")
-        });
-    };
-
-    const onRegister = (data: z.infer<typeof authSchema>) => {
-        if (!data.email) {
-            registerForm.setError("email", { message: "Email is required for registration" });
-            return;
-        }
-        // Auto-generate username from email if not provided
-        const username = data.email.split('@')[0];
-        registerMutation.mutate({ ...data, username } as any, {
-            onSuccess: () => setLocation("/")
-        });
-    };
-
-    const onDemoLogin = () => {
-        loginMutation.mutate({ username: "test_user", password: "password123" }, {
-            onSuccess: () => setLocation("/")
-        });
-    };
 
     const onDiscordLogin = async () => {
         const { error } = await supabase.auth.signInWithOAuth({
@@ -111,8 +52,7 @@ export default function AuthPage() {
 
                     if (res.ok) {
                         const user = await res.json();
-                        // Update query cache to reflect logged in state
-                        queryClient.setQueryData(["/api/user"], user);
+                        queryClient.setQueryData(["/api/auth/user"], user);
                         setLocation("/");
                     }
                 } catch (err) {
@@ -135,130 +75,35 @@ export default function AuthPage() {
                             </div>
                             <h1 className="text-2xl font-bold">Hideout Bot</h1>
                         </div>
-                        <CardTitle className="text-2xl">Welcome back</CardTitle>
+                        <CardTitle className="text-2xl">Welcome</CardTitle>
                         <CardDescription>
-                            Sign in to your account to continue building
+                            Sign in with Discord to continue building
                         </CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <Tabs defaultValue="login" className="w-full">
-                            <TabsList className="grid w-full grid-cols-2 mb-4">
-                                <TabsTrigger value="login">Login</TabsTrigger>
-                                <TabsTrigger value="register">Register</TabsTrigger>
-                            </TabsList>
+                    <CardContent className="space-y-4">
+                        <Button
+                            variant="default"
+                            size="lg"
+                            className="w-full"
+                            onClick={onDiscordLogin}
+                        >
+                            <SiDiscord className="mr-2 h-5 w-5" />
+                            Continue with Discord
+                        </Button>
 
-                            <TabsContent value="login">
-                                <Form {...loginForm}>
-                                    <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
-                                        <FormField
-                                            control={loginForm.control}
-                                            name="username"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Username or Email</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="Enter your username or email" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={loginForm.control}
-                                            name="password"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Password</FormLabel>
-                                                    <FormControl>
-                                                        <Input type="password" placeholder="Enter your password" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <Button
-                                            type="submit"
-                                            className="w-full"
-                                            disabled={loginMutation.isPending}
-                                        >
-                                            {loginMutation.isPending ? "Signing in..." : "Sign In"}
-                                        </Button>
-                                    </form>
-                                </Form>
-                            </TabsContent>
+                        <Button
+                            variant="outline"
+                            size="lg"
+                            className="w-full"
+                            disabled
+                        >
+                            <SiRoblox className="mr-2 h-5 w-5" />
+                            Roblox Login (Coming Soon)
+                        </Button>
 
-                            <TabsContent value="register">
-                                <Form {...registerForm}>
-                                    <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-4">
-
-                                        <FormField
-                                            control={registerForm.control}
-                                            name="email"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Email</FormLabel>
-                                                    <FormControl>
-                                                        <Input type="email" placeholder="Enter your email" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={registerForm.control}
-                                            name="password"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Password</FormLabel>
-                                                    <FormControl>
-                                                        <Input type="password" placeholder="Choose a password" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <Button
-                                            type="submit"
-                                            className="w-full"
-                                            disabled={registerMutation.isPending}
-                                        >
-                                            {registerMutation.isPending ? "Creating account..." : "Create Account"}
-                                        </Button>
-                                    </form>
-                                </Form>
-                            </TabsContent>
-                        </Tabs>
-
-                        <div className="relative my-6">
-                            <div className="absolute inset-0 flex items-center">
-                                <span className="w-full border-t" />
-                            </div>
-                            <div className="relative flex justify-center text-xs uppercase">
-                                <span className="bg-background px-2 text-muted-foreground">
-                                    Or continue with
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <Button
-                                variant="outline"
-                                className="w-full"
-                                onClick={onDemoLogin}
-                                disabled={loginMutation.isPending}
-                            >
-                                Demo Login
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="w-full"
-                                onClick={onDiscordLogin}
-                                disabled={loginMutation.isPending}
-                            >
-                                <SiDiscord className="mr-2 h-4 w-4" />
-                                Discord
-                            </Button>
-                        </div>
+                        <p className="text-xs text-center text-muted-foreground">
+                            By signing in, you agree to our Terms of Service and Privacy Policy
+                        </p>
                     </CardContent>
                 </Card>
             </div>
