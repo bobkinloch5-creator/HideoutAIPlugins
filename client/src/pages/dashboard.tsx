@@ -58,7 +58,9 @@ export default function Dashboard() {
       icon: FolderOpen,
       trend: "+12%",
       trendUp: true,
-      color: "from-blue-500/10 to-cyan-500/10"
+      color: "from-blue-500/10 to-cyan-500/10",
+      borderColor: "border-blue-500/20",
+      iconColor: "from-blue-500 to-cyan-500"
     },
     {
       title: "Active Projects",
@@ -66,7 +68,9 @@ export default function Dashboard() {
       icon: Zap,
       trend: "+5%",
       trendUp: true,
-      color: "from-yellow-500/10 to-orange-500/10"
+      color: "from-yellow-500/10 to-orange-500/10",
+      borderColor: "border-yellow-500/20",
+      iconColor: "from-yellow-500 to-orange-500"
     },
     {
       title: "Commands Generated",
@@ -74,7 +78,9 @@ export default function Dashboard() {
       icon: Code2,
       trend: "+28%",
       trendUp: true,
-      color: "from-green-500/10 to-emerald-500/10"
+      color: "from-green-500/10 to-emerald-500/10",
+      borderColor: "border-green-500/20",
+      iconColor: "from-green-500 to-emerald-500"
     },
     {
       title: "Assets Used",
@@ -82,7 +88,9 @@ export default function Dashboard() {
       icon: TrendingUp,
       trend: "+15%",
       trendUp: true,
-      color: "from-purple-500/10 to-pink-500/10"
+      color: "from-purple-500/10 to-pink-500/10",
+      borderColor: "border-purple-500/20",
+      iconColor: "from-purple-500 to-pink-500"
     }
   ];
 
@@ -139,31 +147,39 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Stats Grid - Fancy Cards */}
+      {/* Stats Grid - Premium Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat, index) => (
           <Card 
             key={index} 
-            className={`group hover-elevate border-2 bg-gradient-to-br ${stat.color} border-primary/20 overflow-hidden`}
+            className={`group relative hover-elevate border-2 bg-gradient-to-br ${stat.color} ${stat.borderColor} overflow-hidden transition-all duration-300`}
             data-testid={`card-stat-${index}`}
           >
-            <CardHeader className="flex flex-row items-center justify-between gap-1 space-y-0 pb-4">
-              <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className={`absolute inset-0 bg-gradient-to-br ${stat.iconColor} opacity-5`} />
+            </div>
+            <CardHeader className="relative flex flex-row items-center justify-between gap-1 space-y-0 pb-4">
+              <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
                 {stat.title}
               </CardTitle>
-              <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition-colors">
-                <stat.icon className="w-5 h-5 text-primary" />
+              <div className={`p-2.5 bg-gradient-to-br ${stat.iconColor} rounded-lg shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-110`}>
+                <stat.icon className="w-5 h-5 text-white" />
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="relative">
               {statsLoading ? (
-                <Skeleton className="h-10 w-24" />
+                <div className="space-y-2">
+                  <Skeleton className="h-8 w-20" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
               ) : (
-                <div className="flex items-baseline gap-3">
-                  <span className="text-4xl font-black" data-testid={`text-stat-value-${index}`}>
-                    {stat.value.toLocaleString()}
-                  </span>
-                  <Badge variant="secondary" className="text-xs font-bold">
+                <div className="space-y-3">
+                  <div className="flex items-baseline gap-3">
+                    <span className="text-5xl font-black bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent" data-testid={`text-stat-value-${index}`}>
+                      {stat.value.toLocaleString()}
+                    </span>
+                  </div>
+                  <Badge variant="secondary" className={`text-xs font-bold bg-gradient-to-r ${stat.iconColor} bg-opacity-20`}>
                     <TrendingUp className="w-3 h-3 mr-1" />
                     {stat.trend}
                   </Badge>
@@ -178,14 +194,19 @@ export default function Dashboard() {
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Recent Projects */}
         <div className="lg:col-span-2 space-y-6">
-          <Card className="border-2 border-primary/20 overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between gap-1 bg-gradient-to-r from-card to-muted/50 pb-6">
-              <div>
-                <CardTitle className="text-2xl font-black">Recent Projects</CardTitle>
-                <CardDescription>Your latest game development projects</CardDescription>
+          <Card className="border-2 border-primary/20 overflow-hidden hover-elevate transition-all">
+            <CardHeader className="flex flex-row items-center justify-between gap-4 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 pb-6 border-b border-primary/10">
+              <div className="space-y-1">
+                <CardTitle className="text-3xl font-black flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                    <FolderOpen className="w-5 h-5 text-white" />
+                  </div>
+                  Recent Projects
+                </CardTitle>
+                <CardDescription className="text-sm">Your latest game development projects</CardDescription>
               </div>
               <Link href="/projects">
-                <Button variant="ghost" size="sm" className="gap-1" data-testid="button-view-all-projects">
+                <Button variant="default" size="sm" className="gap-1 bg-gradient-to-r from-primary to-accent hover:shadow-lg transition-all" data-testid="button-view-all-projects">
                   View all
                   <ArrowRight className="w-4 h-4" />
                 </Button>
@@ -206,54 +227,55 @@ export default function Dashboard() {
                 </div>
               ) : recentProjects.length > 0 ? (
                 <div className="space-y-3">
-                  {recentProjects.map((project) => {
+                  {recentProjects.map((project, idx) => {
                     const Icon = projectTypeIcons[project.projectType] || Sparkles;
                     return (
                       <Link key={project.id} href={`/project/${project.id}`}>
                         <div 
-                          className="flex items-center gap-4 p-4 rounded-xl border-2 border-transparent hover:border-primary/30 hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5 transition-all cursor-pointer group"
+                          className="flex items-center gap-4 p-5 rounded-2xl border-2 border-primary/10 hover:border-primary/40 bg-gradient-to-r from-card to-muted/20 hover:from-primary/5 hover:to-accent/5 transition-all cursor-pointer group shadow-sm hover:shadow-md transform hover:translate-x-1"
+                          style={{ animationDelay: `${idx * 50}ms` }}
                           data-testid={`project-row-${project.id}`}
                         >
-                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center flex-shrink-0 group-hover:from-primary/30 group-hover:to-accent/20 transition-all">
-                            <Icon className="w-6 h-6 text-primary" />
+                          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/30 to-accent/20 flex items-center justify-center flex-shrink-0 group-hover:from-primary/50 group-hover:to-accent/40 transition-all duration-300 shadow-lg">
+                            <Icon className="w-7 h-7 text-white group-hover:scale-110 transition-transform" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="font-black truncate text-lg">{project.name}</span>
+                            <div className="flex items-center gap-2 mb-1.5">
+                              <span className="font-black truncate text-lg text-foreground">{project.name}</span>
                               <Badge variant="secondary" className="text-xs font-bold">
                                 {projectTypeLabels[project.projectType] || "Custom"}
                               </Badge>
                             </div>
-                            <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                              <span className="flex items-center gap-1 font-medium">
-                                <Code2 className="w-3 h-3" />
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                              <span className="flex items-center gap-1.5 font-medium">
+                                <Code2 className="w-3.5 h-3.5 text-primary" />
                                 {project.commandCount} commands
                               </span>
-                              <span className="flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
+                              <span className="flex items-center gap-1.5">
+                                <Clock className="w-3.5 h-3.5 text-accent" />
                                 {project.updatedAt ? new Date(project.updatedAt).toLocaleDateString() : "Recently"}
                               </span>
                             </div>
                           </div>
-                          <ArrowRight className="w-5 h-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <ArrowRight className="w-5 h-5 text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1" />
                         </div>
                       </Link>
                     );
                   })}
                 </div>
               ) : (
-                <div className="text-center py-16">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 mx-auto mb-4 flex items-center justify-center">
-                    <FolderOpen className="w-10 h-10 text-muted-foreground" />
+                <div className="text-center py-24">
+                  <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 mx-auto mb-6 flex items-center justify-center animate-bounce">
+                    <FolderOpen className="w-12 h-12 text-primary" />
                   </div>
-                  <h3 className="font-black text-lg mb-2">No projects yet</h3>
-                  <p className="text-muted-foreground mb-6">
-                    Create your first project to get started
+                  <h3 className="font-black text-xl mb-3 text-foreground">No projects yet</h3>
+                  <p className="text-muted-foreground mb-8 max-w-xs mx-auto">
+                    Start building amazing Roblox games with AI. Create your first project now!
                   </p>
                   <Link href="/new-project">
-                    <Button size="lg" data-testid="button-create-first-project">
-                      <PlusCircle className="w-5 h-5 mr-2" />
-                      Create Project
+                    <Button size="lg" className="gap-2 bg-gradient-to-r from-primary to-accent hover:shadow-lg transition-all" data-testid="button-create-first-project">
+                      <PlusCircle className="w-5 h-5" />
+                      Create Your First Project
                     </Button>
                   </Link>
                 </div>
@@ -265,30 +287,34 @@ export default function Dashboard() {
         {/* Sidebar - Quick Start & Downloads */}
         <div className="space-y-6">
           {/* Quick Start */}
-          <Card className="border-2 border-primary/20 overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-card to-muted/50 pb-4">
-              <CardTitle className="flex items-center gap-2 font-black">
-                <Wind className="w-5 h-5 text-primary" />
+          <Card className="border-2 border-primary/20 overflow-hidden hover-elevate transition-all">
+            <CardHeader className="bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 pb-4 border-b border-primary/10">
+              <CardTitle className="flex items-center gap-3 font-black text-xl">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-white" />
+                </div>
                 Quick Start
               </CardTitle>
-              <CardDescription>Choose a template</CardDescription>
+              <CardDescription>Choose a game template</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 pt-6">
-              {templates.map((template) => (
+              {templates.map((template, idx) => (
                 <Link key={template.type} href={`/new-project?type=${template.type}`}>
                   <div 
-                    className="flex items-start gap-3 p-3 rounded-lg border-2 border-transparent hover:border-primary/30 hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5 transition-all cursor-pointer group"
+                    className="flex items-start gap-4 p-4 rounded-xl border-2 border-primary/10 hover:border-primary/40 bg-gradient-to-r from-muted/30 to-card hover:from-primary/5 hover:to-accent/5 transition-all cursor-pointer group shadow-sm hover:shadow-md transform hover:translate-x-1"
+                    style={{ animationDelay: `${idx * 40}ms` }}
                     data-testid={`template-${template.type}`}
                   >
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                      <template.icon className="w-5 h-5 text-primary" />
+                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/30 to-accent/20 flex items-center justify-center flex-shrink-0 group-hover:from-primary/50 group-hover:to-accent/40 transition-all shadow-md">
+                      <template.icon className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <span className="font-bold block text-sm">{template.title}</span>
-                      <span className="text-xs text-muted-foreground line-clamp-2">
+                      <span className="font-bold block text-sm text-foreground">{template.title}</span>
+                      <span className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                         {template.description}
                       </span>
                     </div>
+                    <ArrowRight className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-all flex-shrink-0 group-hover:translate-x-0.5" />
                   </div>
                 </Link>
               ))}

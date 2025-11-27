@@ -21,7 +21,6 @@ import Settings from "@/pages/settings";
 import Downloads from "@/pages/downloads";
 import Onboarding from "@/pages/onboarding";
 import NotFound from "@/pages/not-found";
-import { useOnboarding } from "@/hooks/useOnboarding";
 
 function LoadingScreen() {
   return (
@@ -65,9 +64,8 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
-  const { isCompleted: onboardingCompleted, isLoading: onboardingLoading } = useOnboarding();
 
-  if (isLoading || onboardingLoading) {
+  if (isLoading) {
     return <LoadingScreen />;
   }
 
@@ -80,20 +78,11 @@ function Router() {
     );
   }
 
-  // Show onboarding to new users
-  if (!onboardingCompleted) {
-    return (
-      <Switch>
-        <Route path="/onboarding" component={Onboarding} />
-        <Route component={Onboarding} />
-      </Switch>
-    );
-  }
-
   return (
     <AuthenticatedLayout>
       <Switch>
         <Route path="/" component={Dashboard} />
+        <Route path="/onboarding" component={Onboarding} />
         <Route path="/projects" component={Projects} />
         <Route path="/new-project" component={NewProject} />
         <Route path="/project/:id" component={ProjectDetail} />
