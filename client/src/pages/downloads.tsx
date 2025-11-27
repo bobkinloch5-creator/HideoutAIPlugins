@@ -115,7 +115,7 @@ export default function Downloads() {
             <div className="mb-8">
               <h3 className="font-semibold mb-4" data-testid="text-improvements">Major Improvements</h3>
               <ul className="space-y-2 text-sm">
-                {versions[0].improvements.map((improvement, i) => (
+                {versions[0]?.improvements?.map((improvement: string, i: number) => (
                   <li key={i} className="flex items-center gap-2">
                     <div className="w-1 h-1 rounded-full bg-primary" />
                     {improvement}
